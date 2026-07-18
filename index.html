@@ -709,7 +709,7 @@
             case 'breukencontext': {
                 let poolBC = [
                     { v: "Van een hardlooproute van [X] km heeft Tess 1/[Y] deel afgelegd. Hoeveel km heeft ze gerend?", f: (x, y) => x / y },
-                    { v: "In een klas zitten [X] children. 2/[Y] deel zit op voetbal. Hoeveel kinderen zijn dat?", f: (x, y) => (x / y) * 2 },
+                    { v: "In een klas zitten [X] kinderen. 2/[Y] deel zit op voetbal. Hoeveel kinderen zijn dat?", f: (x, y) => (x / y) * 2 },
                     { v: "Een tank heeft een inhoud van [X] liter. De tank is voor 3/[Y] gevuld. Hoeveel liter zit erin?", f: (x, y) => (x / y) * 3 }
                 ];
                 let gekozenBc = poolBC[Math.floor(Math.random() * poolBC.length)];
@@ -789,8 +789,8 @@
                 ansRow.className = 'som-row';
 
                 if (somObj.isSplitsen) {
-                    let linksHTML = somObj.splitsData.links === '?' ? `<input type="text" class="splits-input-box" id="input-${globaleIndex}">` : somObj.splitsData.links;
-                    let rechtsHTML = somObj.splitsData.rechts === '?' ? `<input type="text" class="splits-input-box" id="input-${globaleIndex}">` : somObj.splitsData.rechts;
+                    let linksHTML = somObj.splitsData.links === '?' ? `<input type="text" class="splits-input-box" id="input-${globaleIndex}-links">` : somObj.splitsData.links;
+                    let rechtsHTML = somObj.splitsData.rechts === '?' ? `<input type="text" class="splits-input-box" id="input-${globaleIndex}-rechts">` : somObj.splitsData.rechts;
 
                     row.innerHTML = `
                         <div class="som-vraag">Vul het missende getal in het splitsingsschema in:</div>
@@ -842,11 +842,8 @@
         switchView('view-werkblad');
     }
 
-    // NIEUW: html2pdf Generator functies voor directe downloads
     function downloadWerkbladPDF() {
         const element = document.getElementById('pdfWorksheetWrapper');
-        
-        // Tijdelijk klassen toevoegen voor schone PDF rendering
         element.classList.add('pdf-export-mode');
         
         const opt = {
@@ -864,8 +861,6 @@
 
     function downloadAntwoordenPDF() {
         const element = document.getElementById('hiddenAnswerContainer');
-        
-        // Maak het element heel even zichtbaar voor de screenshot generator
         element.style.display = 'block';
         element.classList.add('pdf-export-mode');
         
@@ -888,10 +883,18 @@
         state.selectedCategories.forEach(c => updatesPerCategorie[c] = { goed: 0, totaal: 0 });
 
         geformatteerdeWerkbladSommen.forEach(som => {
-            let inputEl = document.getElementById(`input-${som.index}`);
+            let userAns = "";
+            if (som.isSplitsen) {
+                let inputId = som.splitsData.links === '?' ? `input-${som.index}-links` : `input-${som.index}-rechts`;
+                let inputEl = document.getElementById(inputId);
+                userAns = inputEl ? inputEl.value.trim().replace(',', '.') : "";
+            } else {
+                let inputEl = document.getElementById(`input-${som.index}`);
+                userAns = inputEl ? inputEl.value.trim().replace(',', '.') : "";
+            }
+            
             let rowEl = document.getElementById(`som-row-${som.index}`);
             let fbEl = document.getElementById(`fb-${som.index}`);
-            let userAns = inputEl ? inputEl.value.trim().replace(',', '.') : "";
             let targetAns = som.antwoord.trim().replace(',', '.');
 
             updatesPerCategorie[som.categorie].totaal++;

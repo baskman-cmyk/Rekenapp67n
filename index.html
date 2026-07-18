@@ -48,7 +48,6 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            /* Zorgt dat er onderin altijd ~2cm (90px) vrij blijft voor een banner */
             padding-bottom: 90px; 
         }
 
@@ -165,7 +164,6 @@
             margin-top: 10px;
         }
         
-        /* Extra marge onder de laatste knoppen in views om uit de buurt van de banner te blijven */
         .banner-safe-margin {
             margin-bottom: 40px !important;
         }
@@ -186,7 +184,7 @@
         .stat-mini-card p { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
         .stat-mini-card h5 { font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 2px; }
 
-        /* Compactere Progress Stats Styles */
+        /* Progress Stats Styles */
         .stats-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
         .stats-table th, .stats-table td { padding: 8px 6px; text-align: left; font-size: 12px; border-bottom: 1px solid var(--border); }
         .stats-table th { font-weight: 700; color: var(--text-muted); }
@@ -195,7 +193,7 @@
         .progress-bar-fill { background: var(--success); height: 100%; width: 0%; transition: width 0.3s; }
         .level-badge { font-weight: 700; font-size: 11px; padding: 2px 5px; border-radius: 5px; white-space: nowrap; }
 
-        /* --- WERKBLAD INDELING --- */
+        /* WERKBLAD INDELING */
         .category-header {
             background: var(--primary-light);
             color: var(--primary);
@@ -220,19 +218,57 @@
             gap: 16px;
         }
 
-        /* Splitsen Layout Formaat */
-        .splits-container {
+        /* Visueel splitsen schema */
+        .visual-splits-diagram {
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-family: monospace;
-            font-size: 16px;
-            font-weight: 700;
-            line-height: 1.3;
-            background: #fafafa;
-            padding: 10px 20px;
+            gap: 5px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 12px;
+            min-width: 160px;
+        }
+        .splits-top {
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 6px 16px;
             border-radius: 8px;
-            border: 1px dashed #ccc;
+            font-weight: 800;
+            font-size: 16px;
+        }
+        .splits-branches {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            position: relative;
+            padding-top: 10px;
+        }
+        .splits-branches::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 25%; right: 25%;
+            height: 2px; background: var(--text-muted);
+        }
+        .splits-left, .splits-rechts {
+            background: var(--bg-main);
+            border: 2px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            min-width: 60px;
+        }
+        .splits-input-box {
+            width: 50px;
+            height: 26px;
+            border: 2px dashed var(--primary);
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            background: #fff;
         }
 
         .som-vraag { font-size: 16px; font-weight: 700; line-height: 1.4; white-space: pre-line; flex: 1; }
@@ -245,13 +281,13 @@
         }
         .som-input:focus { border-color: var(--primary); background: #ffffff; }
 
-        /* Nakijk Statusen */
+        /* Nakijk Statussen */
         .som-row.correct { border-color: var(--success); background: #e6fcf5; }
         .som-row.incorrect { border-color: var(--danger); background: #fff5f5; }
         .feedback-icon { font-size: 18px; display: none; }
-        .som-row.correct .feedback-icon, .som-row.incorrect .feedback-icon { display: inline; }
+        .som-row.correct .feedback-icon { display: inline; color: var(--success); }
+        .som-row.incorrect .feedback-icon { display: inline; color: var(--danger); }
 
-        /* Resultatenlijst Compact */
         .res-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 12px; }
     </style>
 </head>
@@ -315,7 +351,7 @@
             </div>
             <div class="tile" id="tile-redactie" onclick="toggleTile('redactie')" style="grid-column: span 2;">
                 <div class="tile-icon">📝</div>
-                <div><h3>8. Redactiesommen</h3><p>Verhaaltjessommen, chocoladerepen, slagers & uitjes</p></div>
+                <div><h3>8. Redactiesommen</h3><p>Rijke variatie aan verhaaltjessommen</p></div>
             </div>
         </div>
 
@@ -348,11 +384,10 @@
 
         <button class="btn-action" onclick="genereerWerkblad()">Oefenblad Genereren 🚀</button>
 
-        <!-- Uitgebreid & Compacter Voortgangs & Statistieken Dashboard -->
+        <!-- Voortgangs & Statistieken Dashboard -->
         <div class="section-title">Mijn Voortgang & Medailles 📊</div>
         <div class="config-block" style="padding: 12px;">
             
-            <!-- Quick Stats Overzicht -->
             <div class="quick-stats-grid">
                 <div class="stat-mini-card">
                     <p>Sommen Gemaakt</p>
@@ -372,7 +407,7 @@
                 </div>
             </div>
 
-            <!-- Compacte tabel met Voortgangsbalk en Medailles -->
+            <!-- Tabel met Voortgangsbalk en Medailles -->
             <table class="stats-table">
                 <thead>
                     <tr>
@@ -382,7 +417,7 @@
                     </tr>
                 </thead>
                 <tbody id="statsTableBody">
-                    <!-- Wordt dynamisch geladen via javascript -->
+                    <!-- Wordt dynamisch geladen via JavaScript -->
                 </tbody>
             </table>
         </div>
@@ -456,11 +491,6 @@
 
     let geformatteerdeWerkbladSommen = [];
 
-    const namenLijst = ["Quinn", "Fleur", "Daan", "Mila", "Sem", "Sophie", "Luuk", "Emma", "Bram", "Sara", "Stijn", "Lieke", "Finn", "Anna"];
-    const objectenLijst = ["chocoladereep", "snoepzak", "verjaardagstaart", "dropveter", "pizza"];
-    const slagerVlees = ["barbequepakketten", "rollades", "biefstukken", "hamburgers", "rookworsten"];
-    const uitstapjes = ["een pretpark", "een dierentuin", "het museum", "de bioscoop", "het zwembad"];
-
     // Start-up
     document.getElementById('xpDisplay').innerText = state.xp;
     updateHistoryUI();
@@ -476,7 +506,6 @@
         }
     }
 
-    // Niveau-indicator verwerking
     function getMedaille(percentage, totaalGemaakt) {
         if (totaalGemaakt === 0) return `<span class="level-badge" style="background:#e0e5f2; color:#a3aed0;">Geen data</span>`;
         if (percentage < 60) return `<span class="level-badge" style="background:#ffebee; color:#c62828;">🥉 Beginner</span>`;
@@ -491,10 +520,8 @@
         
         let totaalSommenApp = 0;
         let totaalGoedApp = 0;
-        
         let besteOnderdeel = "-";
         let bestePerc = -1;
-        
         let minsteOnderdeel = "-";
         let minstePerc = 101;
 
@@ -613,20 +640,15 @@
         let vraag = "", antwoord = "", isSplitsen = false;
         let splitsData = null;
 
-        let naam = namenLijst[Math.floor(Math.random() * namenLijst.length)];
-        let obj = objectenLijst[Math.floor(Math.random() * objectenLijst.length)];
-        let vlees = slagerVlees[Math.floor(Math.random() * slagerVlees.length)];
-        let uitje = uitstapjes[Math.floor(Math.random() * uitstapjes.length)];
-
         switch(cat) {
-            case 'tafels':
+            case 'tafels': {
                 let t = state.selectedTafels[Math.floor(Math.random() * state.selectedTafels.length)];
                 let m = Math.floor(Math.random() * 10) + 1;
                 vraag = `${m} × ${t} =`;
                 antwoord = (m * t).toString();
                 break;
-
-            case 'schatten':
+            }
+            case 'schatten': {
                 let typeSchat = Math.floor(Math.random() * 3);
                 if(typeSchat === 0) {
                     let g1 = Math.floor(Math.random() * 400) + 201;
@@ -645,18 +667,18 @@
                     antwoord = (Math.round(g1 / 10) * 10 * g2).toString();
                 }
                 break;
-
-            case 'splitsen':
+            }
+            case 'splitsen': {
                 isSplitsen = true;
-                let tot = Math.floor(Math.random() * 16) + 14;
+                let tot = Math.floor(Math.random() * 16) + 14; // t/m 30
                 let lDeel = Math.floor(Math.random() * (tot - 6)) + 3;
                 let rDeel = tot - lDeel;
                 let linksIngevuld = Math.random() > 0.5;
                 splitsData = { totaal: tot, links: linksIngevuld ? lDeel : '?', rechts: linksIngevuld ? '?' : rDeel };
                 antwoord = linksIngevuld ? rDeel.toString() : lDeel.toString();
                 break;
-
-            case 'breuken':
+            }
+            case 'breuken': {
                 let subB = Math.floor(Math.random() * 4);
                 if(subB === 0) {
                     let nr = [12, 16, 20, 24, 32][Math.floor(Math.random() * 5)];
@@ -674,21 +696,46 @@
                     antwoord = "1 3/4";
                 }
                 break;
-
-            case 'breukencontext':
-                if(Math.random() > 0.5) {
-                    let dist = [3, 4, 5, 6, 10][Math.floor(Math.random() * 5)];
-                    let noemer = [3, 4, 5][Math.floor(Math.random() * 3)];
-                    vraag = `1/${noemer} van de afstand = ${dist} km. De hele afstand = .......... km`;
-                    antwoord = (dist * noemer).toString();
-                } else {
-                    let kids = [8, 10, 12, 14, 15, 20][Math.floor(Math.random() * 6)];
-                    vraag = `1/2 deel is ${kids} kinderen, dus 2/2 deel is .......... kinderen`;
-                    antwoord = (kids * 2).toString();
-                }
+            }
+            case 'breukencontext': {
+                // MINIMAAL 24 GEVARIEERDE CONTEXTSITUATIES (POOL VAN 24)
+                let poolBC = [
+                    { v: "Van een hardlooproute van [X] km heeft Tess 1/[Y] deel afgelegd. Hoeveel km heeft ze gerend?", f: (x, y) => x / y },
+                    { v: "In een klas zitten [X] kinderen. 2/[Y] deel zit op voetbal. Hoeveel kinderen zijn dat?", f: (x, y) => (x / y) * 2 },
+                    { v: "Een benzinetank heeft een inhoud van [X] liter. De tank is voor 3/[Y] gevuld. Hoeveel liter zit erin?", f: (x, y) => (x / y) * 3 },
+                    { v: "Daan krijgt [X] euro zakgeld per maand. Hij spaart 1/[Y] deel hiervan. Hoeveel euro spaart hij?", f: (x, y) => x / y },
+                    { v: "Een cake moet [X] minuten in de oven. Hij staat er nu 3/[Y] van de tijd in. Hoeveel minuten staat hij al in de oven?", f: (x, y) => (x / y) * 3 },
+                    { v: "Er liggen [X] koekjes in een trommel. Siem eet 1/[Y] deel op. Hoeveel koekjes eet Siem?", f: (x, y) => x / y },
+                    { v: "Een film duurt [X] minuten. Merel heeft al 4/[Y] deel gekeken. Hoeveel minuten heeft ze gezien?", f: (x, y) => (x / y) * 4 },
+                    { v: "Een boer heeft [X] koeien. 1/[Y] deel staat in de stal, de rest staat in de wei. Hoeveel koeien staan er in de stal?", f: (x, y) => x / y },
+                    { v: "De afstand naar opa en oma is [X] km. Na 1/[Y] deel van de rit stoppen we voor limonade. Na hoeveel km stoppen we?", f: (x, y) => x / y },
+                    { v: "Een chocoladereep bestaat uit [X] blokjes. Bram eet 2/[Y] deel op. Hoeveel blokjes eet Bram?", f: (x, y) => (x / y) * 2 },
+                    { v: "Voor een pizza is [X] gram kaas nodig. Sarah heeft al 3/[Y] deel geraspt. Hoeveel gram kaas is dat?", f: (x, y) => (x / y) * 3 },
+                    { v: "Op een parkeerplaats staan [X] auto's. 1/[Y] deel is elektrisch. Hoeveel elektrische auto's staan er?", f: (x, y) => x / y },
+                    { v: "Een basisschool heeft [X] leerlingen. 1/[Y] deel komt met de step. Hoeveel leerlingen stappen op de step?", f: (x, y) => x / y },
+                    { v: "In een boomgaard hangen [X] appels. 5/[Y] deel is al rijp om te plukken. Hoeveel appels zijn er rijp?", f: (x, y) => (x / y) * 5 },
+                    { v: "Een zwembad is gevuld met [X] liter water. Door de zon verdampt 1/[Y] deel. Hoeveel liter water is er verdampt?", f: (x, y) => x / y },
+                    { v: "Een boek telt [X] bladzijden. Lucas heeft 1/[Y] deel uit. Hoeveel bladzijden heeft Lucas gelezen?", f: (x, y) => x / y },
+                    { v: "Er zitten [X] kralen in een zakje. Fleur gebruikt 3/[Y] deel voor een armband. Hoeveel kralen gebruikt Fleur?", f: (x, y) => (x / y) * 3 },
+                    { v: "Een fietstocht is [X] km lang. De wielrenners hebben er al 4/[Y] deel op zitten. Hoeveel km hebben ze gefietst?", f: (x, y) => (x / y) * 4 },
+                    { v: "In een mand liggen [X] peren. 1/[Y] deel is beurs en moet weg. Hoeveel peren gooi je weg?", f: (x, y) => x / y },
+                    { v: "Lars heeft [X] knikkers gewonnen. Hij geeft 2/[Y] deel weg aan zijn broertje. Hoeveel knikkers geeft hij weg?", f: (x, y) => (x / y) * 2 },
+                    { v: "Een computergame kost [X] euro. Luuk krijgt 1/[Y] deel korting. Hoeveel euro korting krijgt Luuk?", f: (x, y) => x / y },
+                    { v: "Op een hondenshow zijn [X] honden aanwezig. 3/[Y] deel bestaat uit poedels. Hoeveel poedels doen er mee?", f: (x, y) => (x / y) * 3 },
+                    { v: "Een schooltuin is [X] vierkante meter groot. 1/[Y] deel is gereserveerd voor bloemen. Hoeveel vierkante meter bloemen is dat?", f: (x, y) => x / y },
+                    { v: "Voor een groot feest zijn [X] ballonnen opgeblazen. 1/[Y] deel knapt helaas voortijdig. Hoeveel ballonnen knappen er?", f: (x, y) => x / y }
+                ];
+                
+                let gekozenBc = poolBC[Math.floor(Math.random() * poolBC.length)];
+                let y = [4, 5, 6, 8, 10][Math.floor(Math.random() * 5)];
+                let factor = Math.floor(Math.random() * 5) + 4; // zorgt voor mooie ronde deeltallen
+                let x = y * factor;
+                
+                vraag = gekozenBc.v.replace("[X]", x).replace("[Y]", y);
+                antwoord = gekozenBc.f(x, y).toString();
                 break;
-
-            case 'optellen_aftrekken':
+            }
+            case 'optellen_aftrekken': {
                 let max = state.getalbereik;
                 let n1 = Math.floor(Math.random() * (max * 0.6)) + 50;
                 let n2 = Math.floor(Math.random() * (max - n1 - 10)) + 10;
@@ -700,8 +747,8 @@
                     antwoord = n2.toString();
                 }
                 break;
-
-            case 'vermenigvuldigen':
+            }
+            case 'vermenigvuldigen': {
                 if(Math.random() > 0.5) {
                     let k1 = Math.floor(Math.random() * 14) + 2;
                     let k2 = Math.floor(Math.random() * 14) + 2;
@@ -714,8 +761,8 @@
                     antwoord = (k1 * k2).toString();
                 }
                 break;
-
-            case 'delen':
+            }
+            case 'delen': {
                 if(Math.random() > 0.5) {
                     let d2 = Math.floor(Math.random() * 17) + 3;
                     let res = Math.floor(Math.random() * 10) + 2;
@@ -727,160 +774,226 @@
                     antwoord = deelsom.a.toString();
                 }
                 break;
-
-            case 'redactie':
-                let redType = Math.floor(Math.random() * 3);
-                if(redType === 0) {
-                    let deeltal = [4, 5, 6, 8][Math.floor(Math.random() * 4)];
-                    let blokjes = [4, 5, 6, 7, 8][Math.floor(Math.random() * 5)];
-                    vraag = `${naam} heeft een ${obj}. Hij/zij deelt ${blokjes} blokjes met vrienden en dat is 1/${deeltal} deel van de reep.\nUit hoeveel blokjes bestaat de hele ${obj}?`;
-                    antwoord = (blokjes * deeltal).toString();
-                } else if(redType === 1) {
-                    let pak = Math.floor(Math.random() * 12) + 5;
-                    let kilo = Math.floor(Math.random() * 10) + 10;
-                    vraag = `Een slager moet voor een zomers weekend ${pak} ${vlees} inpakken van ${kilo} kilo. Hoeveel kilo vlees moet de slager inpakken?`;
-                    antwoord = (pak * kilo).toString();
-                } else {
-                    let kaarten = [10, 15, 20, 25][Math.floor(Math.random() * 4)];
-                    let prijs = [12, 14, 15, 16, 20][Math.floor(Math.random() * 5)];
-                    vraag = `Opa en oma gaan met de hele familie een dayje uit naar ${uitje}. Ze kopen daar ${kaarten} entreekaarten van € ${prijs},- per stuk.\nHoeveel euro moeten opa en oma betalen voor de entree?`;
-                    antwoord = (kaarten * prijs).toString();
+            }
+            case 'redactie': {
+                // MINIMAAL 24 UNIEKE EN GELEDEN REDACTIESOMMEN (POOL VAN 24)
+                let poolRedactie = [
+                    { v: "Een dierentuin verkoopt [X] familietickets in de ochtend en [Y] in de middag. Hoeveel familietickets zijn er in totaal verkocht?", f: (x, y) => x + y },
+                    { v: "Een bakker maakt [X] croissantjes. Aan het einde van de dag heeft hij er nog [Y] over. Hoeveel croissantjes zijn er verkocht?", f: (x, y) => x - y },
+                    { v: "Voor een barbecuefeest koopt de slager [X] luxe barbecuepakketten. In elk pakket zitten [Y] stuks vlees. Hoeveel stuks vlees zijn dit in totaal?", f: (x, y) => x * y },
+                    { v: "Een basisschool verdeelt [X] potloden eerlijk over [Y] klassen. Hoeveel potloden krijgt elke klas?", f: (x, y) => x / y },
+                    { v: "Mila spaart voor een nieuwe fiets van [X] euro. Ze heeft al [Y] euro in haar spaarpot zitten. Hoeveel euro moet ze nog sparen?", f: (x, y) => x - y },
+                    { v: "Er staan [X] rijen met stoelen in de aula van de school. In elke rij staan precies [Y] stoelen. Hoeveel stoelen staan er in totaal?", f: (x, y) => x * y },
+                    { v: "Een vrachtwagen vervoert [X] kratten appels. Bij de eerste winkel lost hij [Y] kratten. Hoeveel kratten met appels blijven er over?", f: (x, y) => x - y },
+                    { v: "Een bibliotheek krijgt een levering van [X] nieuwe boeken. Ze verdelen de boeken gelijkmatig over [Y] planken. Hoeveel boeken komen er op elke plank?", f: (x, y) => x / y },
+                    { v: "Sem fietst elke dag [X] km naar school en [X] km terug naar huis. Hoeveel km fietst Sem in [Y] schooldagen in totaal?", f: (x, y) => (x * 2) * y },
+                    { v: "In een bioscoopzaal zitten [X] mensen te kijken naar een spannende film. [Y] mensen verlaten de zaal tijdens de pauze. Hoeveel mensen blijven er over?", f: (x, y) => x - y },
+                    { v: "Een supermarkt vult de schappen aan met [X] dozen frisdrank. In iedere doos zitten [Y] flessen. Hoeveel flessen frisdrank zijn dit in totaal?", f: (x, y) => x * y },
+                    { v: "Een groep van [X] vrienden gaat naar een pretpark. Ze betalen in totaal [Y] euro voor de entreekaartjes. Hoeveel kost één entreekaartje?", f: (x, y) => y / x },
+                    { v: "Sophie koopt op de markt [X] gram aardbeien en [Y] gram blauwe bessen. Hoeveel gram fruit heeft Sophie in totaal gekocht?", f: (x, y) => x + y },
+                    { v: "Een marathonloper heeft al [X] meter afgelegd. De totale marathon is [Y] meter lang. Hoeveel meter moet de loper nog rennen?", f: (x, y) => y - x },
+                    { v: "Een bloemist maakt boeketten. Ze gebruikt [X] rozen per boeket. Hoeveel rozen heeft ze nodig om [Y] boeketten te maken?", f: (x, y) => x * y },
+                    { v: "Er moeten [X] tennballen verpakt worden in kokers. In elke koker passen [Y] tennisballen. Hoeveel kokers zijn er nodig?", f: (x, y) => x / y },
+                    { v: "Daan verdient [X] euro per uur met zijn bijbaantje. Vorige week heeft hij [Y] uur gewerkt. Hoeveel euro heeft hij in totaal verdiend?", f: (x, y) => x * y },
+                    { v: "Een grote doos met legoblokjes weegt [X] gram. De lege plastic doos zelf weegt [Y] gram. Hoeveel gram wegen alle legoblokjes samen?", f: (x, y) => x - y },
+                    { v: "Voor een knutselproject heeft de juf [X] rollen touw gekocht. Elke rol is precies [Y] meter lang. Hoeveel meter touw is er in totaal?", f: (x, y) => x * y },
+                    { v: "Een schoolbus start de rit met [X] kinderen. Bij de eerste halte stappen er [Y] kinderen uit, en komen er 5 bij. Hoeveel kinderen zitten er nu in de bus?", f: (x, y) => (x - y) + 5 },
+                    { v: "Emma bezorgt [X] folders per week. Hoeveel folders bezorgt zij in totaal in [Y] weken?", f: (x, y) => x * y },
+                    { v: "Een fabriek verpakt [X] kilo suiker in zakken van [Y] kilo per stuk. Hoeveel suikerzakken worden er gevuld?", f: (x, y) => x / y },
+                    { v: "Op een verjaardagsfeestje krijgt Quinn [X] euro van zijn opa en [Y] euro van zijn tante. Hoeveel euro heeft hij in totaal gekregen?", f: (x, y) => x + y },
+                    { v: "Een voetbalstadion biedt plaats aan [X] toeschouwers. Tijdens een wedstrijd zijn er [Y] stoeltjes leeg. Hoeveel toeschouwers zijn er aanwezig?", f: (x, y) => x - y }
+                ];
+                
+                let rIndex = Math.floor(Math.random() * poolRedactie.length);
+                let gekozenRed = poolRedactie[rIndex];
+                
+                // Genereer logische en geschikte getallen op basis van de bewerking van de gekozen som
+                let x = 10, y = 5;
+                if (rIndex === 0 || rIndex === 12 || rIndex === 22) { // Optellen
+                    x = Math.floor(Math.random() * 300) + 150;
+                    y = Math.floor(Math.random() * 200) + 50;
+                } else if (rIndex === 1 || rIndex === 4 || rIndex === 6 || rIndex === 9 || rIndex === 13 || rIndex === 17 || rIndex === 23) { // Aftrekken
+                    x = Math.floor(Math.random() * 500) + 400;
+                    y = Math.floor(Math.random() * 300) + 50;
+                    if (rIndex === 13) { x = 12000; y = 42195; } // Marathon specials
+                } else if (rIndex === 2 || rIndex === 5 || rIndex === 10 || rIndex === 14 || rIndex === 18 || rIndex === 20) { // Vermenigvuldigen
+                    x = Math.floor(Math.random() * 15) + 8;
+                    y = [5, 6, 8, 10, 12][Math.floor(Math.random() * 5)];
+                } else if (rIndex === 3 || rIndex === 7 || rIndex === 15 || rIndex === 21) { // Delen
+                    y = Math.floor(Math.random() * 6) + 4;
+                    let factor = Math.floor(Math.random() * 12) + 8;
+                    x = y * factor;
+                } else if (rIndex === 11) { // Entreekaartjes kosten
+                    x = Math.floor(Math.random() * 4) + 4; // vrienden
+                    let prijs = Math.floor(Math.random() * 5) + 12; // prijs per ticket
+                    y = x * prijs;
+                } else if (rIndex === 8) { // Sem fietst
+                    x = Math.floor(Math.random() * 4) + 2;
+                    y = 5;
+                } else if (rIndex === 16) { // Uren werken
+                    x = 12; // loon
+                    y = Math.floor(Math.random() * 6) + 4;
+                } else if (rIndex === 19) { // Bushalte
+                    x = 24; y = 8;
                 }
+                
+                vraag = gekozenRed.v.replace("[X]", x).replace("[Y]", y);
+                antwoord = gekozenRed.f(x, y).toString();
                 break;
+            }
         }
 
-        return { vraag, antwoord, isSplitsen, splitsData, cat };
+        return { vraag, antwoord, isSplitsen, splitsData };
     }
 
     function genereerWerkblad() {
         if (state.selectedCategories.length === 0) {
-            alert("Vink eerst minimaal één onderdeel aan om te kunnen oefenen!");
+            alert("Kies eerst minimaal één onderdeel om te oefenen!");
             return;
         }
 
-        geformatteerdeWerkbladSommen = [];
         const container = document.getElementById('worksheetContainer');
         container.innerHTML = '';
+        geformatteerdeWerkbladSommen = [];
 
-        let somTeller = 0;
+        let globaleIndex = 0;
 
         state.selectedCategories.forEach(cat => {
-            let NetteNaam = categorieNamen[cat];
-
             let header = document.createElement('div');
             header.className = 'category-header';
-            header.innerText = NetteNaam;
+            header.innerText = categorieNamen[cat];
             container.appendChild(header);
 
-            for (let i = 0; i < state.sommenPerOefening; i++) {
-                let sData = genereerSom(cat);
-                geformatteerdeWerkbladSommen.push(sData);
+            let subContainer = document.createElement('div');
+            subContainer.className = 'worksheet-container';
 
-                let rij = document.createElement('div');
-                rij.className = 'som-row';
-                rij.id = `somrow-${somTeller}`;
+            for(let i = 0; i < state.sommenPerOefening; i++) {
+                let somObj = genereerSom(cat);
+                somObj.categorie = cat;
+                somObj.index = globaleIndex;
+                geformatteerdeWerkbladSommen.push(somObj);
 
-                let inputHtml = `<input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" class="som-input" id="sominput-${somTeller}" placeholder="...">`;
+                let row = document.createElement('div');
+                row.className = 'som-row';
+                row.id = `som-row-${globaleIndex}`;
 
-                if(sData.isSplitsen) {
-                    let lVal = sData.splitsData.links === '?' ? `[   ]` : `[${sData.splitsData.links}]`;
-                    let rVal = sData.splitsData.rechts === '?' ? `[   ]` : `[${sData.splitsData.rechts}]`;
+                if (somObj.isSplitsen) {
+                    // Compleet vernieuwde, prachtige en visuele structuur voor de splitsommen
+                    let linksHTML = somObj.splitsData.links === '?' 
+                        ? `<input type="text" class="splits-input-box" id="input-${globaleIndex}">` 
+                        : somObj.splitsData.links;
                     
-                    rij.innerHTML = `
-                        <div class="som-vraag">Vul het lege vakje in de splitsing in:</div>
-                        <div class="splits-container">
-                             [${sData.splitsData.totaal}]<br>
-                             /   \\<br>
-                            ${lVal}   ${rVal}
+                    let rechtsHTML = somObj.splitsData.rechts === '?' 
+                        ? `<input type="text" class="splits-input-box" id="input-${globaleIndex}">` 
+                        : somObj.splitsData.rechts;
+
+                    row.innerHTML = `
+                        <div class="som-vraag">Vul het missende getal in het splitsingsschema in:</div>
+                        <div class="visual-splits-diagram">
+                            <div class="splits-top">${somObj.splitsData.totaal}</div>
+                            <div class="splits-branches">
+                                <div class="splits-left">${linksHTML}</div>
+                                <div class="splits-rechts">${rechtsHTML}</div>
+                            </div>
                         </div>
-                        <div class="som-input-wrapper">
-                            <span class="feedback-icon" id="icon-${somTeller}"></span>
-                            ${inputHtml}
-                        </div>
+                        <div class="feedback-icon" id="fb-${globaleIndex}"></div>
                     `;
                 } else {
-                    rij.innerHTML = `
-                        <div class="som-vraag">${sData.vraag}</div>
+                    row.innerHTML = `
+                        <div class="som-vraag">${somObj.vraag}</div>
                         <div class="som-input-wrapper">
-                            <span class="feedback-icon" id="icon-${somTeller}"></span>
-                            ${inputHtml}
+                            <input type="text" class="som-input" id="input-${globaleIndex}" placeholder="?">
+                            <span class="feedback-icon" id="fb-${globaleIndex}"></span>
                         </div>
                     `;
                 }
 
-                container.appendChild(rij);
-                somTeller++;
+                subContainer.appendChild(row);
+                globaleIndex++;
             }
+            container.appendChild(subContainer);
         });
 
         document.getElementById('btnControleer').style.display = 'block';
         document.getElementById('btnNaarScore').style.display = 'none';
-        switchView('werkblad');
+
+        switchView('view-werkblad');
     }
 
     function nakijkenWerkblad() {
-        let goedTeller = 0;
+        let totaalGemaakt = geformatteerdeWerkbladSommen.length;
+        let goedTelling = 0;
+        let updatesPerCategorie = {};
 
-        for (let i = 0; i < geformatteerdeWerkbladSommen.length; i++) {
-            const inp = document.getElementById(`sominput-${i}`);
-            const row = document.getElementById(`somrow-${i}`);
-            const ico = document.getElementById(`icon-${i}`);
-            const cat = geformatteerdeWerkbladSommen[i].cat;
+        state.selectedCategories.forEach(c => {
+            updatesPerCategorie[c] = { goed: 0, totaal: 0 };
+        });
 
-            let userAns = inp.value.trim().toLowerCase().replace(/\s+/g, ' ');
-            let correctAns = geformatteerdeWerkbladSommen[i].antwoord.toLowerCase().replace(/\s+/g, ' ');
+        geformatteerdeWerkbladSommen.forEach(som => {
+            let inputEl = document.getElementById(`input-${som.index}`);
+            let rowEl = document.getElementById(`som-row-${som.index}`);
+            let fbEl = document.getElementById(`fb-${som.index}`);
 
-            state.progress[cat].totaal += 1;
+            let userAns = inputEl ? inputEl.value.trim().replace(',', '.') : "";
+            let targetAns = som.antwoord.trim().replace(',', '.');
 
-            if (userAns === correctAns) {
-                goedTeller++;
-                state.progress[cat].goed += 1;
-                row.className = "som-row correct";
-                ico.innerText = "✅";
+            updatesPerCategorie[som.categorie].totaal++;
+
+            if (userAns === targetAns) {
+                rowEl.className = "som-row correct";
+                fbEl.innerHTML = "✔️";
+                goedTelling++;
+                updatesPerCategorie[som.categorie].goed++;
             } else {
-                row.className = "som-row incorrect";
-                ico.innerText = "❌";
-                inp.value = `${userAns} -> (${geformatteerdeWerkbladSommen[i].antwoord})`;
-                inp.style.fontSize = "11px";
-                inp.style.color = "var(--danger)";
-                inp.style.maxWidth = "170px";
+                rowEl.className = "som-row incorrect";
+                fbEl.innerHTML = `❌ <span style="font-size:11px; font-weight:normal; color:var(--danger);">(${som.antwoord})</span>`;
             }
-        }
+        });
 
-        localStorage.setItem('rk_progress_v5', JSON.stringify(state.progress));
-
-        state.xp += goedTeller;
+        // Bereken behaalde XP punten
+        let verdiendePunten = goedTelling * 10;
+        state.xp += verdiendePunten;
         localStorage.setItem('rk_points_v5', state.xp);
         document.getElementById('xpDisplay').innerText = state.xp;
 
-        let d = new Date();
+        // Update de voortgang per categorie in de state
+        for (const [cat, data] of Object.entries(updatesPerCategorie)) {
+            state.progress[cat].totaal += data.totaal;
+            state.progress[cat].goed += data.goed;
+        }
+        localStorage.setItem('rk_progress_v5', JSON.stringify(state.progress));
+
+        // Voeg toe aan geschiedenis
+        let nu = new Date();
+        let datumStr = `${nu.getDate()}-${nu.getMonth()+1} ${nu.getHours()}:${(nu.getMinutes()<10?'0':'')+nu.getMinutes()}`;
         state.history.unshift({
             aantalOnderdelen: state.selectedCategories.length,
-            score: `${goedTeller}/${geformatteerdeWerkbladSommen.length}`,
-            datum: `${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`
+            score: `${goedTelling} / ${totaalGemaakt}`,
+            datum: datumStr
         });
         localStorage.setItem('rk_history_v5', JSON.stringify(state.history));
-        updateHistoryUI();
 
-        document.getElementById('evalScore').innerText = `${goedTeller} / ${geformatteerdeWerkbladSommen.length}`;
-        document.getElementById('evalPoints').innerText = `🏆 +${goedTeller} Punten verdiend op dit blad!`;
+        // Update score evaluatiepagina velden
+        document.getElementById('evalScore').innerText = `${goedTelling} / ${totaalGemaakt}`;
+        document.getElementById('evalPoints').innerText = `+${verdiendePunten} Punten toegevoegd!`;
         
-        if (goedTeller === geformatteerdeWerkbladSommen.length) {
-            document.getElementById('evalFeedback').innerText = "Super! Alles is foutloos opgelost! Een perfecte score! 👑";
-        } else if (goedTeller >= geformatteerdeWerkbladSommen.length * 0.8) {
-            document.getElementById('evalFeedback').innerText = "Knap gedaan! Je hebt een prachtige score gehaald. Spoor de foutjes op om een Ster of Meester te worden!";
-        } else {
-            document.getElementById('evalFeedback').innerText = "Goed geoefend! Kijk rustig naar de verbeteringen om te leren van je fouten.";
-        }
+        let perc = (goedTelling / totaalGemaakt) * 100;
+        if (perc === 100) document.getElementById('evalFeedback').innerText = "Perfect gedaan! Je bent een echte meester! 👑";
+        else if (perc >= 80) document.getElementById('evalFeedback').innerText = "Super goed gewerkt! Een dikke gouden ster! 🥇";
+        else if (perc >= 60) document.getElementById('evalFeedback').innerText = "Mooi resultaat! Je bent goed op weg! 🥈";
+        else document.getElementById('evalFeedback').innerText = "Goed geoefend! Blijf het proberen en je wordt vanzelf beter! 🥉";
 
         document.getElementById('btnControleer').style.display = 'none';
         document.getElementById('btnNaarScore').style.display = 'block';
-        document.getElementById('btnNaarScore').scrollIntoView({ behavior: 'smooth' });
+        
+        updateHistoryUI();
+        window.scrollTo(0, document.body.scrollHeight);
     }
 
     function gaNaarEvaluatieScherm() {
-        switchView('evaluatie');
+        switchView('view-evaluatie');
     }
 </script>
+
 </body>
 </html>

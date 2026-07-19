@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <title>Smarter RekenApp - Groep 6 & 7</title>
-    
+
     <!-- iPad Portretmodus Optimalisatie -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
+    <meta name="apple-mobile-web-app-title" content="RekenApp">
+
     <style>
         :root {
             --bg-main: #f4f7fe;
@@ -19,6 +20,7 @@
             --primary-light: #f4f2ff;
             --success: #05cd99;
             --danger: #ee5d50;
+            --warning: #ff9800;
             --border: #e0e5f2;
             --radius-lg: 20px;
             --radius-md: 12px;
@@ -48,7 +50,15 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            padding-bottom: 90px; 
+            padding-bottom: 40px;
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        .visually-hidden {
+            position: absolute; width: 1px; height: 1px;
+            padding: 0; margin: -1px; overflow: hidden;
+            clip: rect(0,0,0,0); white-space: nowrap; border: 0;
         }
 
         /* Top Bar Navigation */
@@ -65,7 +75,7 @@
         }
 
         .profile-area { display: flex; align-items: center; gap: 14px; }
-        .profile-info h4 { font-size: 18px; font-weight: 700; }
+        .profile-info h1 { font-size: 18px; font-weight: 700; }
         .profile-info p { font-size: 13px; color: var(--text-muted); }
 
         .btn-home {
@@ -77,6 +87,7 @@
             font-weight: 700;
             font-size: 14px;
             cursor: pointer;
+            appearance: none;
         }
 
         .score-container {
@@ -88,7 +99,7 @@
 
         .score-badge {
             background: #fff3e0;
-            color: #ff9800;
+            color: var(--warning);
             padding: 8px 14px;
             border-radius: 20px;
             font-weight: 700;
@@ -103,13 +114,15 @@
             cursor: pointer;
             font-weight: 600;
             text-decoration: underline;
+            appearance: none;
         }
 
         /* Views */
         .view { display: none; flex-direction: column; flex: 1; padding: 24px; }
         .view.active { display: flex; }
 
-        .section-title { font-size: 20px; font-weight: 800; margin: 20px 0 10px 0; }
+        h2.section-title { font-size: 20px; font-weight: 800; margin: 20px 0 10px 0; }
+        .view > h2.section-title:first-child { margin-top: 4px; }
         .sub-text { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
 
         /* Dashboard Grid & Cards */
@@ -120,7 +133,8 @@
             margin-bottom: 20px;
         }
 
-        .tile {
+        button.tile {
+            appearance: none;
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
@@ -129,14 +143,25 @@
             align-items: center;
             gap: 14px;
             height: 90px;
+            width: 100%;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.01);
             transition: all 0.2s;
+            text-align: left;
+            font: inherit;
+            color: inherit;
         }
         .tile.active { border-color: var(--primary); background-color: #f9f8ff; }
-        .tile-icon { font-size: 24px; width: 44px; height: 44px; background: var(--bg-main); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+        .tile.tile-wide { grid-column: span 2; }
+        .tile-icon { font-size: 24px; width: 44px; height: 44px; background: var(--bg-main); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .tile h3 { font-size: 15px; font-weight: 700; }
         .tile p { font-size: 11px; color: var(--text-muted); }
+
+        .tile:focus-visible, .btn-sub:focus-visible, .btn-action:focus-visible,
+        .btn-home:focus-visible, .som-input:focus-visible, .splits-input-box:focus-visible {
+            outline: 3px solid var(--primary);
+            outline-offset: 2px;
+        }
 
         .config-block {
             background: var(--bg-card);
@@ -146,27 +171,28 @@
             margin-bottom: 16px;
         }
         .config-block h4 { margin-bottom: 12px; font-size: 14px; font-weight: 700; color: var(--text-main); }
+        .config-block legend { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 12px; padding: 0; }
+        .config-block fieldset { border: none; padding: 0; margin: 0; }
 
         /* Knoppen Groepen */
         .btn-group { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
-        .btn-sub {
+        button.btn-sub {
+            appearance: none;
             flex: 1; min-width: 65px; padding: 12px; background: var(--bg-main);
             border: 1px solid transparent; border-radius: 10px;
             font-weight: 700; font-size: 13px; color: var(--text-main);
-            cursor: pointer; text-align: center;
+            cursor: pointer; text-align: center; font: inherit;
         }
         .btn-sub.active { background: var(--primary); color: white; }
 
-        .btn-action {
+        button.btn-action {
+            appearance: none;
             background: var(--primary); color: white; border: none; padding: 18px;
             border-radius: 16px; font-weight: 700; font-size: 17px; cursor: pointer;
             width: 100%; text-align: center; box-shadow: 0 4px 12px rgba(67, 24, 255, 0.15);
-            margin-top: 10px;
+            margin-top: 10px; font: inherit;
         }
-        
-        .banner-safe-margin {
-            margin-bottom: 40px !important;
-        }
+        .btn-action.btn-alert { background: var(--warning); }
 
         /* Quick Stats Grid */
         .quick-stats-grid {
@@ -182,13 +208,14 @@
             border: 1px solid var(--border);
         }
         .stat-mini-card p { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-        .stat-mini-card h5 { font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 2px; }
+        .stat-mini-card h3 { font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 2px; }
+        .stat-good { color: var(--success); }
 
         /* Progress Stats Styles */
         .stats-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
         .stats-table th, .stats-table td { padding: 8px 6px; text-align: left; font-size: 12px; border-bottom: 1px solid var(--border); }
         .stats-table th { font-weight: 700; color: var(--text-muted); }
-        
+
         .progress-bar-bg { background: #e0e5f2; border-radius: 4px; width: 70px; height: 6px; display: inline-block; vertical-align: middle; margin-right: 6px; overflow: hidden; }
         .progress-bar-fill { background: var(--success); height: 100%; width: 0%; transition: width 0.3s; }
         .level-badge { font-weight: 700; font-size: 11px; padding: 2px 5px; border-radius: 5px; white-space: nowrap; }
@@ -269,151 +296,136 @@
             text-align: center;
             font-weight: bold;
             background: #fff;
+            font: inherit;
         }
 
         .som-vraag { font-size: 16px; font-weight: 700; line-height: 1.4; white-space: pre-line; flex: 1; }
         .som-input-wrapper { width: 160px; display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
-        
+
         .som-input {
             width: 100%; max-width: 110px; height: 44px; border-radius: 8px;
             border: 2px solid var(--border); background: var(--bg-main);
             color: var(--text-main); font-size: 16px; text-align: center; font-weight: 700; outline: none;
+            font: inherit;
         }
         .som-input:focus { border-color: var(--primary); background: #ffffff; }
 
         /* Nakijk Statussen */
         .som-row.correct { border-color: var(--success); background: #e6fcf5; }
         .som-row.incorrect { border-color: var(--danger); background: #fff5f5; }
+        .som-row.unanswered { border-color: var(--warning); background: #fff8e1; }
         .feedback-icon { font-size: 18px; display: none; }
-        .som-row.correct .feedback-icon { display: inline; color: var(--success); }
-        .som-row.incorrect .feedback-icon { display: inline; color: var(--danger); }
+        .som-row.correct .feedback-icon,
+        .som-row.incorrect .feedback-icon,
+        .som-row.unanswered .feedback-icon { display: inline; }
+        .som-row.correct .feedback-icon { color: var(--success); }
+        .som-row.incorrect .feedback-icon,
+        .som-row.unanswered .feedback-icon { color: var(--danger); }
 
         .res-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 12px; }
+
+        .eval-card { background: white; border: 1px solid var(--border); border-radius: 24px; padding: 32px; text-align: center; margin-top: 20px; }
+        .eval-score { font-size: 44px; color: var(--primary); }
+        .eval-feedback { font-size: 18px; font-weight: 700; margin: 16px 0; }
+        .eval-points { color: var(--warning); font-weight: 700; font-size: 16px; margin-bottom: 32px; }
+        .history-card { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 6px; }
+        .empty-hint { padding: 6px; color: var(--text-muted); font-size: 11px; }
     </style>
 </head>
 <body>
 
 <div class="app-window">
-    
+
     <!-- Top Navigatiebalk -->
-    <div class="top-nav">
+    <header class="top-nav">
         <div class="profile-area">
-            <button class="btn-home" onclick="terugNaarHome()">🏠 Home</button>
+            <button class="btn-home" type="button" data-action="terug-naar-home">🏠 Home</button>
             <div class="profile-info">
-                <h4>Mijn Reken Dashboard</h4>
-                <p>Niveau Groep 6 & 7</p>
+                <h1>Mijn Reken Dashboard</h1>
+                <p>Niveau Groep 6 &amp; 7</p>
             </div>
         </div>
         <div class="score-container">
             <div class="score-badge">Punten: 🏆 <span id="xpDisplay">0</span></div>
-            <button class="btn-reset-points" onclick="resetPunten()">🗑️ reset punten</button>
+            <button class="btn-reset-points" type="button" data-action="reset-punten">🗑️ reset punten</button>
         </div>
-    </div>
+    </header>
 
+    <main>
     <!-- VIEW 1: CONFIGURATIE & OPTIES -->
-    <div id="view-dashboard" class="view active">
-        
-        <div class="section-title" style="margin-top:5px;">1. Kies je Oefeningen 🎯</div>
+    <section id="view-dashboard" class="view active" aria-label="Dashboard">
+
+        <h2 class="section-title">1. Kies je Oefeningen 🎯</h2>
         <p class="sub-text">Selecteer één of meerdere onderdelen om op het werkblad te plaatsen:</p>
-        
-        <div class="dashboard-grid">
-            <div class="tile" id="tile-tafels" onclick="toggleTile('tafels')">
-                <div class="tile-icon">🦘</div>
-                <div><h3>1. Tafels (8-19)</h3><p>Kies je tafels</p></div>
-            </div>
-            <div class="tile" id="tile-schatten" onclick="toggleTile('schatten')">
-                <div class="tile-icon">🎯</div>
-                <div><h3>2. Schatten</h3><p>Grote getallen</p></div>
-            </div>
-            <div class="tile" id="tile-splitsen" onclick="toggleTile('splitsen')">
-                <div class="tile-icon">🪵</div>
-                <div><h3>3. Splitsommen</h3><p>Visueel t/m 30</p></div>
-            </div>
-            <div class="tile" id="tile-breuken" onclick="toggleTile('breuken')">
-                <div class="tile-icon">🍕</div>
-                <div><h3>4. Breuken Mix</h3><p>Standaard breuken</p></div>
-            </div>
-            <div class="tile" id="tile-breukencontext" onclick="toggleTile('breukencontext')">
-                <div class="tile-icon">🚙</div>
-                <div><h3>4b. Breuk in Context</h3><p>Verhaaltjes formats</p></div>
-            </div>
-            <div class="tile" id="tile-optellen_aftrekken" onclick="toggleTile('optellen_aftrekken')">
-                <div class="tile-icon">➕</div>
-                <div><h3>5. +/- Sommen</h3><p>Instelbaar bereik</p></div>
-            </div>
-            <div class="tile" id="tile-vermenigvuldigen" onclick="toggleTile('vermenigvuldigen')">
-                <div class="tile-icon">✖️</div>
-                <div><h3>6. Keersommen</h3><p>Tafels & Groot</p></div>
-            </div>
-            <div class="tile" id="tile-delen" onclick="toggleTile('delen')">
-                <div class="tile-icon">➗</div>
-                <div><h3>7. Deelsommen</h3><p>Tafels & Groot</p></div>
-            </div>
-            <div class="tile" id="tile-redactie" onclick="toggleTile('redactie')" style="grid-column: span 2;">
-                <div class="tile-icon">📝</div>
-                <div><h3>8. Redactiesommen</h3><p>Rijke variatie aan verhaaltjessommen</p></div>
-            </div>
+
+        <div class="dashboard-grid" id="tileGrid" role="group" aria-label="Kies oefeningen">
+            <!-- tegels worden door JavaScript ingevuld op basis van CATEGORIES -->
         </div>
 
         <!-- Sub-panel: Tafel Selectie vooraf -->
         <div class="config-block" id="tafelInlinePanel" style="display:none;">
-            <h4>Kies welke tafels mee mogen doen op het blad:</h4>
-            <div class="btn-group" id="tafelSubCheckboxes"></div>
+            <h4 id="tafelPanelTitel">Kies welke tafels mee mogen doen op het blad:</h4>
+            <div class="btn-group" id="tafelSubCheckboxes" role="group" aria-labelledby="tafelPanelTitel"></div>
         </div>
 
         <!-- Instelling Aantal sommen per geselecteerde oefening -->
         <div class="config-block">
-            <h4>2. Aantal opdrachten PER OEFENING:</h4>
-            <p style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">Kies hoeveel sommen ELK gekozen onderdeel apart krijgt:</p>
-            <div class="btn-group">
-                <button class="btn-sub active" id="len-10" onclick="setLength(10)">10 sommen</button>
-                <button class="btn-sub" id="len-15" onclick="setLength(15)">15 sommen</button>
-                <button class="btn-sub" id="len-20" onclick="setLength(20)">20 sommen</button>
-            </div>
+            <fieldset>
+                <legend>2. Aantal opdrachten PER OEFENING:</legend>
+                <p class="sub-text">Kies hoeveel sommen ELK gekozen onderdeel apart krijgt:</p>
+                <div class="btn-group" id="lengteGroep">
+                    <button class="btn-sub active" type="button" data-action="set-lengte" data-lengte="10">10 sommen</button>
+                    <button class="btn-sub" type="button" data-action="set-lengte" data-lengte="15">15 sommen</button>
+                    <button class="btn-sub" type="button" data-action="set-lengte" data-lengte="20">20 sommen</button>
+                </div>
+            </fieldset>
         </div>
 
         <!-- Instelling Getalbereik (+/- sommen) -->
         <div class="config-block">
-            <h4>3. Getalbereik (voor onderdeel 5: Optellen/Aftrekken):</h4>
-            <div class="btn-group">
-                <button class="btn-sub active" id="range-1000" onclick="setRange(1000)">Tot 1.000</button>
-                <button class="btn-sub" id="range-10000" onclick="setRange(10000)">Tot 10.000</button>
-                <button class="btn-sub" id="range-100000" onclick="setRange(100000)">Tot 100.000</button>
-            </div>
+            <fieldset>
+                <legend>3. Getalbereik (voor onderdeel 5: Optellen/Aftrekken):</legend>
+                <div class="btn-group" id="bereikGroep">
+                    <button class="btn-sub active" type="button" data-action="set-bereik" data-bereik="1000">Tot 1.000</button>
+                    <button class="btn-sub" type="button" data-action="set-bereik" data-bereik="10000">Tot 10.000</button>
+                    <button class="btn-sub" type="button" data-action="set-bereik" data-bereik="100000">Tot 100.000</button>
+                </div>
+            </fieldset>
         </div>
 
-        <button class="btn-action" onclick="genereerWerkblad()">Oefenblad Genereren 🚀</button>
+        <button class="btn-action" type="button" data-action="genereer-werkblad">Oefenblad Genereren 🚀</button>
 
         <!-- Voortgangs & Statistieken Dashboard -->
-        <div class="section-title">Mijn Voortgang & Medailles 📊</div>
+        <h2 class="section-title">Mijn Voortgang &amp; Medailles 📊</h2>
         <div class="config-block" style="padding: 12px;">
-            
+
             <div class="quick-stats-grid">
                 <div class="stat-mini-card">
                     <p>Sommen Gemaakt</p>
-                    <h5 id="statTotaalSommen">0</h5>
+                    <h3 id="statTotaalSommen">0</h3>
                 </div>
                 <div class="stat-mini-card">
                     <p>Totaal Goed</p>
-                    <h5 id="statTotaalGoed" style="color: var(--success);">0</h5>
+                    <h3 id="statTotaalGoed" class="stat-good">0</h3>
                 </div>
                 <div class="stat-mini-card">
                     <p>Beste Onderdeel 🏆</p>
-                    <h5 id="statBesteOnderdeel">-</h5>
+                    <h3 id="statBesteOnderdeel">-</h3>
                 </div>
                 <div class="stat-mini-card">
                     <p>Extra Oefenen ⚠️</p>
-                    <h5 id="statMinderOnderdeel">-</h5>
+                    <h3 id="statMinderOnderdeel">-</h3>
                 </div>
             </div>
 
             <!-- Tabel met Voortgangsbalk en Medailles -->
             <table class="stats-table">
+                <caption class="visually-hidden">Voortgang per onderdeel</caption>
                 <thead>
                     <tr>
-                        <th>Onderdeel</th>
-                        <th>Score</th>
-                        <th>Niveau</th>
+                        <th scope="col">Onderdeel</th>
+                        <th scope="col">Score</th>
+                        <th scope="col">Niveau</th>
                     </tr>
                 </thead>
                 <tbody id="statsTableBody">
@@ -422,578 +434,848 @@
             </table>
         </div>
 
-        <div class="section-title">Eerder behaalde resultaten 📈</div>
-        <div id="historyContainer" style="background:white; border:1px solid var(--border); border-radius:14px; padding:6px;" class="banner-safe-margin"></div>
-    </div>
+        <h2 class="section-title">Eerder behaalde resultaten 📈</h2>
+        <div id="historyContainer" class="history-card"></div>
+    </section>
 
     <!-- VIEW 2: HET DIGITALE WERKBLAD -->
-    <div id="view-werkblad" class="view">
-        <div class="section-title">Mijn Oefenblad 📝</div>
+    <section id="view-werkblad" class="view" aria-label="Werkblad">
+        <h2 class="section-title">Mijn Oefenblad 📝</h2>
         <p class="sub-text">Alle onderdelen staan netjes gesorteerd onder elkaar. Succes!</p>
-        
+
         <div id="worksheetContainer">
             <!-- Gecategoriseerde sommen worden hier dynamisch ingeladen -->
         </div>
 
-        <!-- Eerste knop om na te kijken -->
-        <button class="btn-action" id="btnControleer" style="margin-top: 30px;" onclick="nakijkenWerkblad()">Werkblad Controleren ✔️</button>
-        
-        <!-- Extra knop die verschijnt NA het nakijken -->
-        <button class="btn-action banner-safe-margin" id="btnNaarScore" style="margin-top: 10px; background: #ff9800; display: none;" onclick="gaNaarEvaluatieScherm()">Bekijk Mijn Score 📊</button>
-    </div>
+        <button class="btn-action" id="btnControleer" type="button" style="margin-top: 30px;" data-action="nakijken">Werkblad Controleren ✔️</button>
+        <button class="btn-action btn-alert" id="btnNaarScore" type="button" style="margin-top: 10px; display: none;" data-action="naar-evaluatie">Bekijk Mijn Score 📊</button>
+    </section>
 
     <!-- VIEW 3: RESULTAAT EVALUATIE -->
-    <div id="view-evaluatie" class="view">
-        <div class="section-title">Mooi werk! 🌟</div>
-        <div style="background:white; border:1px solid var(--border); border-radius:24px; padding:32px; text-align: center; margin-top:20px;">
-            <h2 style="font-size: 44px; color: var(--primary);" id="evalScore">0 / 0</h2>
-            <p style="font-size: 18px; font-weight: 700; margin: 16px 0;" id="evalFeedback">Goed gedaan!</p>
-            <p style="color: #ff9800; font-weight:700; font-size:16px; margin-bottom: 32px;" id="evalPoints">+0 Punten toegevoegd!</p>
-            <button class="btn-action banner-safe-margin" onclick="terugNaarHome()">Nieuw Oefenblad Maken 🏠</button>
+    <section id="view-evaluatie" class="view" aria-label="Resultaat">
+        <h2 class="section-title">Mooi werk! 🌟</h2>
+        <div class="eval-card">
+            <p class="eval-score" id="evalScore">0 / 0</p>
+            <p class="eval-feedback" id="evalFeedback">Goed gedaan!</p>
+            <p class="eval-points" id="evalPoints">+0 Punten toegevoegd!</p>
+            <button class="btn-action" type="button" data-action="terug-naar-home">Nieuw Oefenblad Maken 🏠</button>
         </div>
-    </div>
+    </section>
+    </main>
 
 </div>
 
 <script>
-    const categorieNamen = {
-        'tafels': '1. Tafels (8-19)',
-        'schatten': '2. Schatten',
-        'splitsen': '3. Splitsommen',
-        'breuken': '4. Breuken Mix',
-        'breukencontext': '4b. Breuk in Context',
-        'optellen_aftrekken': '5. +/- Sommen',
-        'vermenigvuldigen': '6. Keersommen',
-        'delen': '7. Deelsommen',
-        'redactie': '8. Redactiesommen'
+'use strict';
+
+/* ============================================================
+   CENTRALE INSTELLINGEN
+   ============================================================ */
+const CONFIG = {
+    storageKeys: {
+        points: 'rk_points_v6',
+        history: 'rk_history_v6',
+        progress: 'rk_progress_v6'
+    },
+    historyLimit: 100,
+    duplicateRetryLimit: 25,
+    defaultTafels: [8, 9, 10, 12],
+    defaultSommenPerOefening: 10,
+    defaultGetalbereik: 1000,
+    tafelBereik: { min: 8, max: 19 }
+};
+
+/* ============================================================
+   HULPFUNCTIES (klein en puur, makkelijk te testen)
+   ============================================================ */
+function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function pickRandom(arr) {
+    return arr[randInt(0, arr.length - 1)];
+}
+
+function maakSom(vraag, antwoordNum) {
+    const antwoord = String(antwoordNum);
+    return {
+        vraag,
+        antwoord,
+        isSplitsen: false,
+        splitsData: null,
+        signature: `${vraag}=${antwoord}`
     };
+}
 
-    // State Beheer
-    let state = {
-        xp: parseInt(localStorage.getItem('rk_points_v5')) || 0,
-        history: JSON.parse(localStorage.getItem('rk_history_v5')) || [],
-        progress: JSON.parse(localStorage.getItem('rk_progress_v5')) || {
-            'tafels': { totaal: 0, goed: 0 },
-            'schatten': { totaal: 0, goed: 0 },
-            'splitsen': { totaal: 0, goed: 0 },
-            'breuken': { totaal: 0, goed: 0 },
-            'breukencontext': { totaal: 0, goed: 0 },
-            'optellen_aftrekken': { totaal: 0, goed: 0 },
-            'vermenigvuldigen': { totaal: 0, goed: 0 },
-            'delen': { totaal: 0, goed: 0 },
-            'redactie': { totaal: 0, goed: 0 }
-        },
-        selectedCategories: [],
-        selectedTafels: [8, 9, 10, 12],
-        sommenPerOefening: 10,
-        getalbereik: 1000
+function maakSplitsSom(totaal, links, rechts, antwoordNum) {
+    const antwoord = String(antwoordNum);
+    return {
+        vraag: 'Vul het missende getal in het splitsingsschema in:',
+        antwoord,
+        isSplitsen: true,
+        splitsData: { totaal, links, rechts },
+        signature: `splits:${totaal}-${links}-${rechts}`
     };
+}
 
-    let geformatteerdeWerkbladSommen = [];
+/* ============================================================
+   SOM-GENERATOREN PER CATEGORIE
+   Elke generator is een pure functie zonder bijwerkingen buiten
+   het lezen van de (injecteerbare) instellingen.
+   ============================================================ */
 
-    // Start-up
-    document.getElementById('xpDisplay').innerText = state.xp;
+function genTafels(instellingen) {
+    const tafels = (instellingen.selectedTafels && instellingen.selectedTafels.length)
+        ? instellingen.selectedTafels
+        : CONFIG.defaultTafels;
+    const t = pickRandom(tafels);
+    const m = randInt(1, 10);
+    return maakSom(`${m} × ${t} =`, m * t);
+}
+
+function genSchattenOptellen() {
+    const g1 = randInt(201, 600);
+    const g2 = randInt(101, 400);
+    const antwoord = Math.round(g1 / 100) * 100 + Math.round(g2 / 100) * 100;
+    return maakSom(`Hoeveel is het ongeveer? (Rond af op honderdtallen):\n ${g1} + ${g2} ≈`, antwoord);
+}
+
+function genSchattenAftrekken() {
+    const g1 = randInt(400, 1199);
+    const g2 = randInt(101, 400);
+    const antwoord = Math.round(g1 / 100) * 100 - Math.round(g2 / 100) * 100;
+    return maakSom(`Hoeveel is het ongeveer? (Rond af op honderdtallen):\n ${g1} - ${g2} ≈`, antwoord);
+}
+
+function genSchattenVermenigvuldigen() {
+    const g1 = pickRandom([29, 39, 49, 99]);
+    const g2 = randInt(3, 9);
+    const antwoord = Math.round(g1 / 10) * 10 * g2;
+    return maakSom(`Hoeveel is het ongeveer? (Rond af op tientallen):\n ${g1} × ${g2} ≈`, antwoord);
+}
+
+function genSchatten() {
+    const varianten = [genSchattenOptellen, genSchattenAftrekken, genSchattenVermenigvuldigen];
+    return pickRandom(varianten)();
+}
+
+function genSplitsen() {
+    const totaal = randInt(14, 30); // t/m 30
+    const lDeel = randInt(3, totaal - 4);
+    const rDeel = totaal - lDeel;
+    const linksIngevuld = Math.random() > 0.5;
+    if (linksIngevuld) {
+        return maakSplitsSom(totaal, lDeel, '?', rDeel);
+    }
+    return maakSplitsSom(totaal, '?', rDeel, lDeel);
+}
+
+const POOL_BREUKEN_HELFT_VAN = [12, 16, 20, 24, 32];
+const POOL_BREUKEN_TELLER = [6, 8, 10, 12];
+const POOL_BREUKEN_VEREENVOUDIG = [
+    { v: '8/12 = ... / 3', a: '2' },
+    { v: '6/9 = ... / 3', a: '2' },
+    { v: '10/15 = ... / 3', a: '2' },
+    { v: '4/6 = ... / 3', a: '2' },
+    { v: '9/12 = ... / 4', a: '3' },
+    { v: '12/16 = ... / 4', a: '3' },
+    { v: '10/12 = ... / 6', a: '5' }
+];
+const POOL_BREUKEN_HELEN = [
+    { teller: 7, noemer: 4 },
+    { teller: 9, noemer: 2 },
+    { teller: 11, noemer: 3 },
+    { teller: 13, noemer: 5 },
+    { teller: 15, noemer: 4 },
+    { teller: 8, noemer: 3 },
+    { teller: 17, noemer: 6 }
+];
+
+function genBreuken() {
+    const subB = randInt(0, 3);
+    if (subB === 0) {
+        const nr = pickRandom(POOL_BREUKEN_HELFT_VAN);
+        return maakSom(`Wat is 3/4 van ${nr}?`, (nr / 4) * 3);
+    }
+    if (subB === 1) {
+        const nrs = pickRandom(POOL_BREUKEN_TELLER);
+        return maakSom(`Vul de ontbrekende teller in:\n1/2 = .../${nrs}`, nrs / 2);
+    }
+    if (subB === 2) {
+        const item = pickRandom(POOL_BREUKEN_VEREENVOUDIG);
+        return maakSom(`Vereenvoudig de breuk zo ver mogelijk:\n${item.v}`, item.a);
+    }
+    const item = pickRandom(POOL_BREUKEN_HELEN);
+    const helen = Math.floor(item.teller / item.noemer);
+    const rest = item.teller - helen * item.noemer;
+    const antwoord = `${helen} ${rest}/${item.noemer}`;
+    return maakSom(`Haal de helen eruit:\n${item.teller}/${item.noemer} = ... (Geef op als bijv: 1 3/4)`, antwoord);
+}
+
+const POOL_BREUKEN_CONTEXT = [
+    { v: 'Van een hardlooproute van [X] km heeft Tess 1/[Y] deel afgelegd. Hoeveel km heeft ze gerend?', f: (x, y) => x / y },
+    { v: 'In een klas zitten [X] kinderen. 2/[Y] deel zit op voetbal. Hoeveel kinderen zijn dat?', f: (x, y) => (x / y) * 2 },
+    { v: 'Een benzinetank heeft een inhoud van [X] liter. De tank is voor 3/[Y] gevuld. Hoeveel liter zit erin?', f: (x, y) => (x / y) * 3 },
+    { v: 'Daan krijgt [X] euro zakgeld per maand. Hij spaart 1/[Y] deel hiervan. Hoeveel euro spaart hij?', f: (x, y) => x / y },
+    { v: 'Een cake moet [X] minuten in de oven. Hij staat er nu 3/[Y] van de tijd in. Hoeveel minuten staat hij al in de oven?', f: (x, y) => (x / y) * 3 },
+    { v: 'Er liggen [X] koekjes in een trommel. Siem eet 1/[Y] deel op. Hoeveel koekjes eet Siem?', f: (x, y) => x / y },
+    { v: 'Een film duurt [X] minuten. Merel heeft al 4/[Y] deel gekeken. Hoeveel minuten heeft ze gezien?', f: (x, y) => (x / y) * 4 },
+    { v: 'Een boer heeft [X] koeien. 1/[Y] deel staat in de stal, de rest staat in de wei. Hoeveel koeien staan er in de stal?', f: (x, y) => x / y },
+    { v: 'De afstand naar opa en oma is [X] km. Na 1/[Y] deel van de rit stoppen we voor limonade. Na hoeveel km stoppen we?', f: (x, y) => x / y },
+    { v: 'Een chocoladereep bestaat uit [X] blokjes. Bram eet 2/[Y] deel op. Hoeveel blokjes eet Bram?', f: (x, y) => (x / y) * 2 },
+    { v: 'Voor een pizza is [X] gram kaas nodig. Sarah heeft al 3/[Y] deel geraspt. Hoeveel gram kaas is dat?', f: (x, y) => (x / y) * 3 },
+    { v: "Op een parkeerplaats staan [X] auto's. 1/[Y] deel is elektrisch. Hoeveel elektrische auto's staan er?", f: (x, y) => x / y },
+    { v: 'Een basisschool heeft [X] leerlingen. 1/[Y] deel komt met de step. Hoeveel leerlingen stappen op de step?', f: (x, y) => x / y },
+    { v: 'In een boomgaard hangen [X] appels. 5/[Y] deel is al rijp om te plukken. Hoeveel appels zijn er rijp?', f: (x, y) => (x / y) * 5 },
+    { v: 'Een zwembad is gevuld met [X] liter water. Door de zon verdampt 1/[Y] deel. Hoeveel liter water is er verdampt?', f: (x, y) => x / y },
+    { v: 'Een boek telt [X] bladzijden. Lucas heeft 1/[Y] deel uit. Hoeveel bladzijden heeft Lucas gelezen?', f: (x, y) => x / y },
+    { v: 'Er zitten [X] kralen in een zakje. Fleur gebruikt 3/[Y] deel voor een armband. Hoeveel kralen gebruikt Fleur?', f: (x, y) => (x / y) * 3 },
+    { v: 'Een fietstocht is [X] km lang. De wielrenners hebben er al 4/[Y] deel op zitten. Hoeveel km hebben ze gefietst?', f: (x, y) => (x / y) * 4 },
+    { v: 'In een mand liggen [X] peren. 1/[Y] deel is beurs en moet weg. Hoeveel peren gooi je weg?', f: (x, y) => x / y },
+    { v: 'Lars heeft [X] knikkers gewonnen. Hij geeft 2/[Y] deel weg aan zijn broertje. Hoeveel knikkers geeft hij weg?', f: (x, y) => (x / y) * 2 },
+    { v: 'Een computergame kost [X] euro. Luuk krijgt 1/[Y] deel korting. Hoeveel euro korting krijgt Luuk?', f: (x, y) => x / y },
+    { v: 'Op een hondenshow zijn [X] honden aanwezig. 3/[Y] deel bestaat uit poedels. Hoeveel poedels doen er mee?', f: (x, y) => (x / y) * 3 },
+    { v: 'Een schooltuin is [X] vierkante meter groot. 1/[Y] deel is gereserveerd voor bloemen. Hoeveel vierkante meter bloemen is dat?', f: (x, y) => x / y },
+    { v: 'Voor een groot feest zijn [X] ballonnen opgeblazen. 1/[Y] deel knapt helaas voortijdig. Hoeveel ballonnen knappen er?', f: (x, y) => x / y }
+];
+
+function genBreukenContext() {
+    const item = pickRandom(POOL_BREUKEN_CONTEXT);
+    const y = pickRandom([4, 5, 6, 8, 10]);
+    const factor = randInt(4, 8);
+    const x = y * factor;
+    const vraag = item.v.replace('[X]', x).replace('[Y]', y);
+    return maakSom(vraag, item.f(x, y));
+}
+
+function genOptellenAftrekken(instellingen) {
+    const max = instellingen.getalbereik || CONFIG.defaultGetalbereik;
+    const n1 = randInt(50, Math.floor(max * 0.6) + 50);
+    const n2 = randInt(10, Math.max(11, max - n1 - 10));
+    if (Math.random() > 0.5) {
+        return maakSom(`${n1} + ${n2} =`, n1 + n2);
+    }
+    return maakSom(`${n1 + n2} - ${n1} =`, n2);
+}
+
+function genVermenigvuldigen() {
+    if (Math.random() > 0.5) {
+        const k1 = randInt(2, 15);
+        const k2 = randInt(2, 15);
+        return maakSom(`${k1} × ${k2} =`, k1 * k2);
+    }
+    const k1 = pickRandom([4, 6, 8, 5, 7]);
+    const k2 = pickRandom([14, 25, 125, 230, 110]);
+    return maakSom(`${k1} × ${k2} =`, k1 * k2);
+}
+
+function genDelen() {
+    if (Math.random() > 0.5) {
+        const deler = randInt(3, 19);
+        const res = randInt(2, 11);
+        return maakSom(`${deler * res} : ${deler} =`, res);
+    }
+    const item = pickRandom([
+        { v: '84 : 4', a: 21 },
+        { v: '450 : 9', a: 50 },
+        { v: '725 : 5', a: 145 },
+        { v: '360 : 6', a: 60 }
+    ]);
+    return maakSom(`${item.v} =`, item.a);
+}
+
+/* Redactiesommen: elke pool-entry heeft zijn EIGEN generator voor de
+   getallen (genXY), zodat de code niet meer afhankelijk is van de
+   volgorde/index in de array. Dat maakt het veilig om later sommen
+   toe te voegen, te verwijderen of te herschikken. */
+const POOL_REDACTIE = [
+    { v: 'Een dierentuin verkoopt [X] familietickets in de ochtend en [Y] in de middag. Hoeveel familietickets zijn er in totaal verkocht?', f: (x, y) => x + y, genXY: () => [randInt(150, 449), randInt(50, 249)] },
+    { v: 'Een bakker maakt [X] croissantjes. Aan het einde van de dag heeft hij er nog [Y] over. Hoeveel croissantjes zijn er verkocht?', f: (x, y) => x - y, genXY: () => [randInt(400, 899), randInt(50, 349)] },
+    { v: 'Voor een barbecuefeest koopt de slager [X] luxe barbecuepakketten. In elk pakket zitten [Y] stuks vlees. Hoeveel stuks vlees zijn dit in totaal?', f: (x, y) => x * y, genXY: () => [randInt(8, 22), pickRandom([5, 6, 8, 10, 12])] },
+    { v: 'Een basisschool verdeelt [X] potloden eerlijk over [Y] klassen. Hoeveel potloden krijgt elke klas?', f: (x, y) => x / y, genXY: () => { const y = randInt(4, 9); return [y * randInt(8, 19), y]; } },
+    { v: 'Mila spaart voor een nieuwe fiets van [X] euro. Ze heeft al [Y] euro in haar spaarpot zitten. Hoeveel euro moet ze nog sparen?', f: (x, y) => x - y, genXY: () => [randInt(400, 899), randInt(50, 349)] },
+    { v: 'Er staan [X] rijen met stoelen in de aula van de school. In elke rij staan precies [Y] stoelen. Hoeveel stoelen staan er in totaal?', f: (x, y) => x * y, genXY: () => [randInt(8, 22), pickRandom([5, 6, 8, 10, 12])] },
+    { v: 'Een vrachtwagen vervoert [X] kratten appels. Bij de eerste winkel lost hij [Y] kratten. Hoeveel kratten met appels blijven er over?', f: (x, y) => x - y, genXY: () => [randInt(400, 899), randInt(50, 349)] },
+    { v: 'Een bibliotheek krijgt een levering van [X] nieuwe boeken. Ze verdelen de boeken gelijkmatig over [Y] planken. Hoeveel boeken komen er op elke plank?', f: (x, y) => x / y, genXY: () => { const y = randInt(4, 9); return [y * randInt(8, 19), y]; } },
+    { v: 'Sem fietst elke dag [X] km naar school en [X] km terug naar huis. Hoeveel km fietst Sem in [Y] schooldagen in totaal?', f: (x, y) => (x * 2) * y, genXY: () => [randInt(2, 5), randInt(4, 5)] },
+    { v: 'In een bioscoopzaal zitten [X] mensen te kijken naar een spannende film. [Y] mensen verlaten de zaal tijdens de pauze. Hoeveel mensen blijven er over?', f: (x, y) => x - y, genXY: () => [randInt(400, 899), randInt(50, 349)] },
+    { v: 'Een supermarkt vult de schappen aan met [X] dozen frisdrank. In iedere doos zitten [Y] flessen. Hoeveel flessen frisdrank zijn dit in totaal?', f: (x, y) => x * y, genXY: () => [randInt(8, 22), pickRandom([5, 6, 8, 10, 12])] },
+    { v: 'Een groep van [X] vrienden gaat naar een pretpark. Ze betalen in totaal [Y] euro voor de entreekaartjes. Hoeveel kost één entreekaartje?', f: (x, y) => y / x, genXY: () => { const x = randInt(4, 7); const prijs = randInt(12, 16); return [x, x * prijs]; } },
+    { v: 'Sophie koopt op de markt [X] gram aardbeien en [Y] gram blauwe bessen. Hoeveel gram fruit heeft Sophie in totaal gekocht?', f: (x, y) => x + y, genXY: () => [randInt(150, 449), randInt(50, 249)] },
+    { v: 'Een marathonloper heeft al [X] meter afgelegd. De totale marathon is [Y] meter lang. Hoeveel meter moet de loper nog rennen?', f: (x, y) => y - x, genXY: () => [randInt(5000, 35000), 42195] },
+    { v: 'Een bloemist maakt boeketten. Ze gebruikt [X] rozen per boeket. Hoeveel rozen heeft ze nodig om [Y] boeketten te maken?', f: (x, y) => x * y, genXY: () => [randInt(8, 22), pickRandom([5, 6, 8, 10, 12])] },
+    { v: 'Er moeten [X] tennisballen verpakt worden in kokers. In elke koker passen [Y] tennisballen. Hoeveel kokers zijn er nodig?', f: (x, y) => x / y, genXY: () => { const y = randInt(4, 9); return [y * randInt(8, 19), y]; } },
+    { v: 'Daan verdient [X] euro per uur met zijn bijbaantje. Vorige week heeft hij [Y] uur gewerkt. Hoeveel euro heeft hij in totaal verdiend?', f: (x, y) => x * y, genXY: () => [12, randInt(4, 9)] },
+    { v: 'Een grote doos met legoblokjes weegt [X] gram. De lege plastic doos zelf weegt [Y] gram. Hoeveel gram wegen alle legoblokjes samen?', f: (x, y) => x - y, genXY: () => [randInt(400, 899), randInt(50, 349)] },
+    { v: 'Voor een knutselproject heeft de juf [X] rollen touw gekocht. Elke rol is precies [Y] meter lang. Hoeveel meter touw is er in totaal?', f: (x, y) => x * y, genXY: () => [randInt(8, 22), pickRandom([5, 6, 8, 10, 12])] },
+    { v: 'Een schoolbus start de rit met [X] kinderen. Bij de eerste halte stappen er [Y] kinderen uit, en komen er 5 bij. Hoeveel kinderen zitten er nu in de bus?', f: (x, y) => (x - y) + 5, genXY: () => { const y = randInt(5, 12); return [randInt(y + 5, y + 20), y]; } },
+    { v: 'Emma bezorgt [X] folders per week. Hoeveel folders bezorgt zij in totaal in [Y] weken?', f: (x, y) => x * y, genXY: () => [randInt(8, 22), pickRandom([5, 6, 8, 10, 12])] },
+    { v: 'Een fabriek verpakt [X] kilo suiker in zakken van [Y] kilo per stuk. Hoeveel suikerzakken worden er gevuld?', f: (x, y) => x / y, genXY: () => { const y = randInt(4, 9); return [y * randInt(8, 19), y]; } },
+    { v: 'Op een verjaardagsfeestje krijgt Quinn [X] euro van zijn opa en [Y] euro van zijn tante. Hoeveel euro heeft hij in totaal gekregen?', f: (x, y) => x + y, genXY: () => [randInt(150, 449), randInt(50, 249)] },
+    { v: 'Een voetbalstadion biedt plaats aan [X] toeschouwers. Tijdens een wedstrijd zijn er [Y] stoeltjes leeg. Hoeveel toeschouwers zijn er aanwezig?', f: (x, y) => x - y, genXY: () => [randInt(400, 899), randInt(50, 349)] }
+];
+
+function genRedactie() {
+    const item = pickRandom(POOL_REDACTIE);
+    const [x, y] = item.genXY();
+    const vraag = item.v.replace('[X]', x).replace('[Y]', y);
+    return maakSom(vraag, item.f(x, y));
+}
+
+/* ============================================================
+   CATEGORIE-REGISTRATIE
+   Nieuwe oefening toevoegen? Eén regel hieronder toevoegen,
+   verder hoeft er nergens anders iets te veranderen.
+   ============================================================ */
+const CATEGORIES = {
+    tafels: { label: '1. Tafels (8-19)', icon: '🦘', sub: 'Kies je tafels', generator: genTafels, wide: false },
+    schatten: { label: '2. Schatten', icon: '🎯', sub: 'Grote getallen', generator: genSchatten, wide: false },
+    splitsen: { label: '3. Splitsommen', icon: '🪵', sub: 'Visueel t/m 30', generator: genSplitsen, wide: false },
+    breuken: { label: '4. Breuken Mix', icon: '🍕', sub: 'Standaard breuken', generator: genBreuken, wide: false },
+    breukencontext: { label: '4b. Breuk in Context', icon: '🚙', sub: 'Verhaaltjes formats', generator: genBreukenContext, wide: false },
+    optellen_aftrekken: { label: '5. +/- Sommen', icon: '➕', sub: 'Instelbaar bereik', generator: genOptellenAftrekken, wide: false },
+    vermenigvuldigen: { label: '6. Keersommen', icon: '✖️', sub: 'Tafels & Groot', generator: genVermenigvuldigen, wide: false },
+    delen: { label: '7. Deelsommen', icon: '➗', sub: 'Tafels & Groot', generator: genDelen, wide: false },
+    redactie: { label: '8. Redactiesommen', icon: '📝', sub: 'Rijke variatie aan verhaaltjessommen', generator: genRedactie, wide: true }
+};
+
+/* ============================================================
+   VALIDATIE + ANTI-DUPLICAAT
+   ============================================================ */
+function valideerSom(som) {
+    if (!som) return false;
+    if (som.isSplitsen) {
+        const a = parseFloat(som.antwoord);
+        return som.splitsData && !Number.isNaN(a);
+    }
+    return typeof som.vraag === 'string' && som.vraag.length > 0 &&
+        typeof som.antwoord === 'string' && som.antwoord.length > 0 && som.antwoord !== 'NaN';
+}
+
+function genereerUniekeGeldigeSom(catKey, instellingen, vorigeSignature) {
+    const generator = CATEGORIES[catKey].generator;
+    let som = null;
+    for (let poging = 0; poging < CONFIG.duplicateRetryLimit; poging++) {
+        som = generator(instellingen);
+        if (valideerSom(som) && som.signature !== vorigeSignature) {
+            return som;
+        }
+    }
+    // Na te veel pogingen: geef de laatst gegenereerde (gevalideerde) som terug
+    // zodat het werkblad nooit vastloopt, ook al is die toevallig een duplicaat.
+    if (som && valideerSom(som)) return som;
+    console.warn(`Kon geen geldige som genereren voor categorie "${catKey}".`);
+    return maakSom('Foutmelding: som kon niet worden gegenereerd =', 0);
+}
+
+/* ============================================================
+   ANTWOORD-NORMALISATIE
+   ============================================================ */
+function normaliseerAntwoord(ruw) {
+    if (typeof ruw !== 'string') return '';
+    return ruw.trim().replace(',', '.').replace(/\s+/g, ' ');
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        CONFIG, CATEGORIES,
+        randInt, pickRandom, maakSom, maakSplitsSom,
+        genTafels, genSchatten, genSplitsen, genBreuken, genBreukenContext,
+        genOptellenAftrekken, genVermenigvuldigen, genDelen, genRedactie,
+        valideerSom, genereerUniekeGeldigeSom, normaliseerAntwoord,
+        POOL_REDACTIE, POOL_BREUKEN_CONTEXT
+    };
+}
+
+'use strict';
+
+/* ============================================================
+   VEILIGE LOCALSTORAGE WRAPPER
+   Voorkomt crashes in bijv. privé-browsen waar localStorage
+   kan ontbreken of vol kan zitten.
+   ============================================================ */
+const Storage = {
+    get(key, fallback) {
+        try {
+            const raw = localStorage.getItem(key);
+            if (raw === null) return fallback;
+            return JSON.parse(raw);
+        } catch (e) {
+            console.warn('Kon opslag niet lezen voor', key, e);
+            return fallback;
+        }
+    },
+    set(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+            return true;
+        } catch (e) {
+            console.warn('Kon opslag niet schrijven voor', key, e);
+            return false;
+        }
+    }
+};
+
+/* ============================================================
+   APP-STATUS (alles op één plek, geen losse globale variabelen)
+   ============================================================ */
+function buildDefaultProgress() {
+    const progress = {};
+    Object.keys(CATEGORIES).forEach(key => {
+        progress[key] = { totaal: 0, goed: 0 };
+    });
+    return progress;
+}
+
+const state = {
+    xp: Storage.get(CONFIG.storageKeys.points, 0),
+    history: Storage.get(CONFIG.storageKeys.history, []),
+    progress: Storage.get(CONFIG.storageKeys.progress, buildDefaultProgress()),
+    selectedCategories: [],
+    selectedTafels: CONFIG.defaultTafels.slice(),
+    sommenPerOefening: CONFIG.defaultSommenPerOefening,
+    getalbereik: CONFIG.defaultGetalbereik,
+    huidigWerkblad: [] // de op dit moment getoonde, nog na te kijken sommen
+};
+
+// Zorg dat elke bekende categorie een progress-record heeft, ook als er
+// een nieuwe categorie is toegevoegd na een eerder bezoek (localStorage
+// kan een oudere structuur bevatten).
+Object.keys(CATEGORIES).forEach(key => {
+    if (!state.progress[key]) {
+        state.progress[key] = { totaal: 0, goed: 0 };
+    }
+});
+
+/* ============================================================
+   NAVIGATIE (gefixt: één consistente naamgeving overal)
+   ============================================================ */
+function switchView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const el = document.getElementById(`view-${name}`);
+    if (el) {
+        el.classList.add('active');
+    } else {
+        console.error('Onbekend scherm aangevraagd:', name);
+    }
+    window.scrollTo(0, 0);
+}
+
+function terugNaarHome() {
+    updateStatsUI();
+    switchView('dashboard');
+}
+
+/* ============================================================
+   DASHBOARD: TEGELS OPBOUWEN VANUIT DE CATEGORY-REGISTRATIE
+   ============================================================ */
+function bouwTegels() {
+    const grid = document.getElementById('tileGrid');
+    const fragment = document.createDocumentFragment();
+    Object.entries(CATEGORIES).forEach(([key, cat]) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tile' + (cat.wide ? ' tile-wide' : '');
+        btn.id = `tile-${key}`;
+        btn.dataset.action = 'toggle-tile';
+        btn.dataset.cat = key;
+        btn.setAttribute('aria-pressed', 'false');
+        btn.innerHTML = `
+            <div class="tile-icon" aria-hidden="true">${cat.icon}</div>
+            <div><h3>${cat.label}</h3><p>${cat.sub}</p></div>
+        `;
+        fragment.appendChild(btn);
+    });
+    grid.appendChild(fragment);
+}
+
+function bouwTafelCheckboxes() {
+    const container = document.getElementById('tafelSubCheckboxes');
+    container.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    for (let t = CONFIG.tafelBereik.min; t <= CONFIG.tafelBereik.max; t++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-sub' + (state.selectedTafels.includes(t) ? ' active' : '');
+        btn.id = `tfbtn-${t}`;
+        btn.dataset.action = 'toggle-tafel';
+        btn.dataset.tafel = String(t);
+        btn.setAttribute('aria-pressed', state.selectedTafels.includes(t) ? 'true' : 'false');
+        btn.textContent = String(t);
+        fragment.appendChild(btn);
+    }
+    container.appendChild(fragment);
+}
+
+/* ============================================================
+   TEGELS & INSTELLINGEN AAN/UIT ZETTEN
+   ============================================================ */
+function toggleTile(cat) {
+    const tile = document.getElementById(`tile-${cat}`);
+    const idx = state.selectedCategories.indexOf(cat);
+    if (idx > -1) {
+        state.selectedCategories.splice(idx, 1);
+        tile.classList.remove('active');
+        tile.setAttribute('aria-pressed', 'false');
+    } else {
+        state.selectedCategories.push(cat);
+        tile.classList.add('active');
+        tile.setAttribute('aria-pressed', 'true');
+    }
+    document.getElementById('tafelInlinePanel').style.display =
+        state.selectedCategories.includes('tafels') ? 'block' : 'none';
+}
+
+function toggleTafelNummer(t) {
+    const btn = document.getElementById(`tfbtn-${t}`);
+    const idx = state.selectedTafels.indexOf(t);
+    if (idx > -1) {
+        if (state.selectedTafels.length > 1) {
+            state.selectedTafels.splice(idx, 1);
+            btn.classList.remove('active');
+            btn.setAttribute('aria-pressed', 'false');
+        }
+        // Als dit de laatste geselecteerde tafel is, laten we hem aan staan
+        // zodat er altijd minstens één tafel overblijft om mee te oefenen.
+    } else {
+        state.selectedTafels.push(t);
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+    }
+}
+
+function setLengte(l) {
+    state.sommenPerOefening = l;
+    document.querySelectorAll('#lengteGroep .btn-sub').forEach(b => {
+        b.classList.toggle('active', parseInt(b.dataset.lengte, 10) === l);
+    });
+}
+
+function setBereik(r) {
+    state.getalbereik = r;
+    document.querySelectorAll('#bereikGroep .btn-sub').forEach(b => {
+        b.classList.toggle('active', parseInt(b.dataset.bereik, 10) === r);
+    });
+}
+
+/* ============================================================
+   PUNTEN, MEDAILLES EN STATISTIEKEN
+   ============================================================ */
+function resetPunten() {
+    const bevestig = confirm('Weet je zeker dat je alle verdiende punten wilt resetten naar 0?\n\n(Geen zorgen: de medailles en voortgang per onderdeel worden NIET gewist!)');
+    if (!bevestig) return;
+    state.xp = 0;
+    Storage.set(CONFIG.storageKeys.points, 0);
+    document.getElementById('xpDisplay').textContent = '0';
+}
+
+function getMedaille(percentage, totaalGemaakt) {
+    if (totaalGemaakt === 0) return `<span class="level-badge" style="background:#e0e5f2; color:#a3aed0;">Geen data</span>`;
+    if (percentage < 60) return `<span class="level-badge" style="background:#ffebee; color:#c62828;">🥉 Beginner</span>`;
+    if (percentage < 80) return `<span class="level-badge" style="background:#e8f5e9; color:#2e7d32;">🥈 Goed</span>`;
+    if (percentage < 95) return `<span class="level-badge" style="background:#e3f2fd; color:#1565c0;">🥇 Ster</span>`;
+    return `<span class="level-badge" style="background:#fff8e1; color:#f57f17;">👑 Meester</span>`;
+}
+
+function updateStatsUI() {
+    const tbody = document.getElementById('statsTableBody');
+    tbody.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+
+    let totaalSommenApp = 0;
+    let totaalGoedApp = 0;
+    let besteOnderdeel = '-';
+    let bestePerc = -1;
+    let minsteOnderdeel = '-';
+    let minstePerc = 101;
+
+    for (const [key, data] of Object.entries(state.progress)) {
+        totaalSommenApp += data.totaal;
+        totaalGoedApp += data.goed;
+
+        let percentage = 0;
+        if (data.totaal > 0) {
+            percentage = Math.round((data.goed / data.totaal) * 100);
+            const kortLabel = CATEGORIES[key] ? CATEGORIES[key].label.replace(/^\d+[a-z]?\.\s*/, '') : key;
+            if (data.totaal >= 5 && percentage > bestePerc) {
+                bestePerc = percentage;
+                besteOnderdeel = kortLabel;
+            }
+            if (data.totaal >= 5 && percentage < minstePerc) {
+                minstePerc = percentage;
+                minsteOnderdeel = kortLabel;
+            }
+        }
+
+        const label = CATEGORIES[key] ? CATEGORIES[key].label : key;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td style="font-weight:600;">${label}</td>
+            <td>
+                <div style="margin-bottom: 2px;"><strong>${data.goed}</strong> / ${data.totaal} <span style="font-size:10px; color:var(--text-muted);">(${percentage}%)</span></div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: ${percentage}%;"></div>
+                </div>
+            </td>
+            <td>${getMedaille(percentage, data.totaal)}</td>
+        `;
+        fragment.appendChild(row);
+    }
+    tbody.appendChild(fragment);
+
+    document.getElementById('statTotaalSommen').textContent = String(totaalSommenApp);
+    document.getElementById('statTotaalGoed').textContent = String(totaalGoedApp);
+    document.getElementById('statBesteOnderdeel').textContent = besteOnderdeel + (bestePerc !== -1 ? ` (${bestePerc}%)` : '');
+    document.getElementById('statMinderOnderdeel').textContent = minsteOnderdeel + (minstePerc !== 101 ? ` (${minstePerc}%)` : '');
+}
+
+function updateHistoryUI() {
+    const container = document.getElementById('historyContainer');
+    if (state.history.length === 0) {
+        container.innerHTML = `<p class="empty-hint">Nog geen eerdere resultaten opgeslagen.</p>`;
+        return;
+    }
+    container.innerHTML = state.history.slice(0, 4).map(h => `
+        <div class="res-row">
+            <strong>Blad (${h.aantalOnderdelen} ond.)</strong>
+            <span>Score: ${h.score} (${h.datum})</span>
+        </div>
+    `).join('');
+}
+
+/* ============================================================
+   WERKBLAD GENEREREN
+   ============================================================ */
+function genereerWerkblad() {
+    if (state.selectedCategories.length === 0) {
+        alert('Kies eerst minimaal één onderdeel om te oefenen!');
+        return;
+    }
+
+    const container = document.getElementById('worksheetContainer');
+    container.innerHTML = '';
+    state.huidigWerkblad = [];
+
+    const fragment = document.createDocumentFragment();
+    let globaleIndex = 0;
+
+    state.selectedCategories.forEach(cat => {
+        const header = document.createElement('div');
+        header.className = 'category-header';
+        header.textContent = CATEGORIES[cat] ? CATEGORIES[cat].label : cat;
+        fragment.appendChild(header);
+
+        const subContainer = document.createElement('div');
+        subContainer.className = 'worksheet-container';
+
+        let vorigeSignature = null;
+        const instellingen = {
+            selectedTafels: state.selectedTafels,
+            getalbereik: state.getalbereik
+        };
+
+        for (let i = 0; i < state.sommenPerOefening; i++) {
+            const somObj = genereerUniekeGeldigeSom(cat, instellingen, vorigeSignature);
+            vorigeSignature = somObj.signature;
+            somObj.categorie = cat;
+            somObj.index = globaleIndex;
+            state.huidigWerkblad.push(somObj);
+
+            const row = document.createElement('div');
+            row.className = 'som-row';
+            row.id = `som-row-${globaleIndex}`;
+
+            if (somObj.isSplitsen) {
+                const linksHTML = somObj.splitsData.links === '?'
+                    ? `<label class="visually-hidden" for="input-${globaleIndex}">Ontbrekend getal, links</label><input type="text" inputmode="numeric" class="splits-input-box" id="input-${globaleIndex}">`
+                    : somObj.splitsData.links;
+                const rechtsHTML = somObj.splitsData.rechts === '?'
+                    ? `<label class="visually-hidden" for="input-${globaleIndex}">Ontbrekend getal, rechts</label><input type="text" inputmode="numeric" class="splits-input-box" id="input-${globaleIndex}">`
+                    : somObj.splitsData.rechts;
+
+                row.innerHTML = `
+                    <div class="som-vraag">Vul het missende getal in het splitsingsschema in:</div>
+                    <div class="visual-splits-diagram">
+                        <div class="splits-top">${somObj.splitsData.totaal}</div>
+                        <div class="splits-branches">
+                            <div class="splits-left">${linksHTML}</div>
+                            <div class="splits-rechts">${rechtsHTML}</div>
+                        </div>
+                    </div>
+                    <div class="feedback-icon" id="fb-${globaleIndex}" aria-live="polite"></div>
+                `;
+            } else {
+                row.innerHTML = `
+                    <div class="som-vraag">${somObj.vraag}</div>
+                    <div class="som-input-wrapper">
+                        <label class="visually-hidden" for="input-${globaleIndex}">Antwoord voor som ${globaleIndex + 1}</label>
+                        <input type="text" inputmode="decimal" class="som-input" id="input-${globaleIndex}" placeholder="?">
+                        <span class="feedback-icon" id="fb-${globaleIndex}" aria-live="polite"></span>
+                    </div>
+                `;
+            }
+
+            subContainer.appendChild(row);
+            globaleIndex++;
+        }
+        fragment.appendChild(subContainer);
+    });
+
+    container.appendChild(fragment);
+
+    document.getElementById('btnControleer').style.display = 'block';
+    document.getElementById('btnNaarScore').style.display = 'none';
+
+    switchView('werkblad');
+}
+
+/* ============================================================
+   NAKIJKEN
+   ============================================================ */
+function nakijkenWerkblad() {
+    const totaalGemaakt = state.huidigWerkblad.length;
+    if (totaalGemaakt === 0) return;
+
+    let goedTelling = 0;
+    const updatesPerCategorie = {};
+    state.selectedCategories.forEach(c => {
+        updatesPerCategorie[c] = { goed: 0, totaal: 0 };
+    });
+
+    state.huidigWerkblad.forEach(som => {
+        const inputEl = document.getElementById(`input-${som.index}`);
+        const rowEl = document.getElementById(`som-row-${som.index}`);
+        const fbEl = document.getElementById(`fb-${som.index}`);
+
+        const userAnsRuw = inputEl ? inputEl.value : '';
+        const userAns = normaliseerAntwoord(userAnsRuw);
+        const targetAns = normaliseerAntwoord(som.antwoord);
+
+        updatesPerCategorie[som.categorie].totaal++;
+
+        if (userAns === '') {
+            rowEl.className = 'som-row unanswered';
+            fbEl.innerHTML = `⚠️ <span style="font-size:11px; font-weight:normal; color:var(--danger);">(niet ingevuld, antwoord: ${som.antwoord})</span>`;
+        } else if (userAns === targetAns) {
+            rowEl.className = 'som-row correct';
+            fbEl.innerHTML = '✔️';
+            goedTelling++;
+            updatesPerCategorie[som.categorie].goed++;
+        } else {
+            rowEl.className = 'som-row incorrect';
+            fbEl.innerHTML = `❌ <span style="font-size:11px; font-weight:normal; color:var(--danger);">(${som.antwoord})</span>`;
+        }
+    });
+
+    // Punten
+    const verdiendePunten = goedTelling * 10;
+    state.xp += verdiendePunten;
+    Storage.set(CONFIG.storageKeys.points, state.xp);
+    document.getElementById('xpDisplay').textContent = String(state.xp);
+
+    // Voortgang per categorie
+    for (const [cat, data] of Object.entries(updatesPerCategorie)) {
+        state.progress[cat].totaal += data.totaal;
+        state.progress[cat].goed += data.goed;
+    }
+    Storage.set(CONFIG.storageKeys.progress, state.progress);
+
+    // Geschiedenis (beperkt tot CONFIG.historyLimit)
+    const nu = new Date();
+    const datumStr = `${nu.getDate()}-${nu.getMonth() + 1} ${nu.getHours()}:${(nu.getMinutes() < 10 ? '0' : '') + nu.getMinutes()}`;
+    state.history.unshift({
+        aantalOnderdelen: state.selectedCategories.length,
+        score: `${goedTelling} / ${totaalGemaakt}`,
+        datum: datumStr
+    });
+    if (state.history.length > CONFIG.historyLimit) {
+        state.history.length = CONFIG.historyLimit;
+    }
+    Storage.set(CONFIG.storageKeys.history, state.history);
+
+    // Evaluatiescherm vullen
+    document.getElementById('evalScore').textContent = `${goedTelling} / ${totaalGemaakt}`;
+    document.getElementById('evalPoints').textContent = `+${verdiendePunten} Punten toegevoegd!`;
+
+    const perc = (goedTelling / totaalGemaakt) * 100;
+    let feedback;
+    if (perc === 100) feedback = 'Perfect gedaan! Je bent een echte meester! 👑';
+    else if (perc >= 80) feedback = 'Super goed gewerkt! Een dikke gouden ster! 🥇';
+    else if (perc >= 60) feedback = 'Mooi resultaat! Je bent goed op weg! 🥈';
+    else feedback = 'Goed geoefend! Blijf het proberen en je wordt vanzelf beter! 🥉';
+    document.getElementById('evalFeedback').textContent = feedback;
+
+    document.getElementById('btnControleer').style.display = 'none';
+    document.getElementById('btnNaarScore').style.display = 'block';
+
+    updateHistoryUI();
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+function gaNaarEvaluatieScherm() {
+    switchView('evaluatie');
+}
+
+/* ============================================================
+   EVENT DELEGATIE
+   Eén centraal punt voor alle klik- en toetsenbordinteracties,
+   zodat er geen inline onclick-attributen of losse globale
+   functie-koppelingen nodig zijn.
+   ============================================================ */
+function handleAction(el) {
+    const action = el.dataset.action;
+    switch (action) {
+        case 'terug-naar-home': terugNaarHome(); break;
+        case 'reset-punten': resetPunten(); break;
+        case 'toggle-tile': toggleTile(el.dataset.cat); break;
+        case 'toggle-tafel': toggleTafelNummer(parseInt(el.dataset.tafel, 10)); break;
+        case 'set-lengte': setLengte(parseInt(el.dataset.lengte, 10)); break;
+        case 'set-bereik': setBereik(parseInt(el.dataset.bereik, 10)); break;
+        case 'genereer-werkblad': genereerWerkblad(); break;
+        case 'nakijken': nakijkenWerkblad(); break;
+        case 'naar-evaluatie': gaNaarEvaluatieScherm(); break;
+        default: break;
+    }
+}
+
+document.addEventListener('click', (event) => {
+    const el = event.target.closest('[data-action]');
+    if (el) handleAction(el);
+});
+
+// Enter-toets in een antwoordveld: spring naar het volgende veld,
+// of controleer het werkblad als het de laatste vraag was.
+document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter') return;
+    const target = event.target;
+    if (!target.matches('.som-input, .splits-input-box')) return;
+    event.preventDefault();
+    const alleVelden = Array.from(document.querySelectorAll('#worksheetContainer input'));
+    const idx = alleVelden.indexOf(target);
+    if (idx > -1 && idx < alleVelden.length - 1) {
+        alleVelden[idx + 1].focus();
+    } else {
+        nakijkenWerkblad();
+    }
+});
+
+/* ============================================================
+   OPSTARTEN
+   ============================================================ */
+function init() {
+    document.getElementById('xpDisplay').textContent = String(state.xp);
+    bouwTegels();
+    bouwTafelCheckboxes();
     updateHistoryUI();
     updateStatsUI();
-    bouwTafelCheckboxes();
+}
 
-    function resetPunten() {
-        let bevestig = confirm("Weet je zeker dat je alle verdiende punten wilt resetten naar 0?\n\n(Geen zorgen: de medailles en voortgang per onderdeel worden NIET gewist!)");
-        if (bevestig) {
-            state.xp = 0;
-            localStorage.setItem('rk_points_v5', 0);
-            document.getElementById('xpDisplay').innerText = 0;
-        }
-    }
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
 
-    function getMedaille(percentage, totaalGemaakt) {
-        if (totaalGemaakt === 0) return `<span class="level-badge" style="background:#e0e5f2; color:#a3aed0;">Geen data</span>`;
-        if (percentage < 60) return `<span class="level-badge" style="background:#ffebee; color:#c62828;">🥉 Beginner</span>`;
-        if (percentage < 80) return `<span class="level-badge" style="background:#e8f5e9; color:#2e7d32;">🥈 Goed</span>`;
-        if (percentage < 95) return `<span class="level-badge" style="background:#e3f2fd; color:#1565c0;">🥇 Ster</span>`;
-        return `<span class="level-badge" style="background:#fff8e1; color:#f57f17;">👑 Meester</span>`;
-    }
-
-    function updateStatsUI() {
-        const tbody = document.getElementById('statsTableBody');
-        tbody.innerHTML = '';
-        
-        let totaalSommenApp = 0;
-        let totaalGoedApp = 0;
-        let besteOnderdeel = "-";
-        let bestePerc = -1;
-        let minsteOnderdeel = "-";
-        let minstePerc = 101;
-
-        for (const [key, data] of Object.entries(state.progress)) {
-            totaalSommenApp += data.totaal;
-            totaalGoedApp += data.goed;
-
-            let percentage = 0;
-            if (data.totaal > 0) {
-                percentage = Math.round((data.goed / data.totaal) * 100);
-                
-                if (data.totaal >= 5 && percentage > bestePerc) {
-                    bestePerc = percentage;
-                    besteOnderdeel = categorieNamen[key].split('. ')[1];
-                }
-                if (data.totaal >= 5 && percentage < minstePerc) {
-                    minstePerc = percentage;
-                    minsteOnderdeel = categorieNamen[key].split('. ')[1];
-                }
-            }
-            
-            let row = document.createElement('tr');
-            row.innerHTML = `
-                <td style="font-weight:600;">${categorieNamen[key]}</td>
-                <td>
-                    <div style="margin-bottom: 2px;"><strong>${data.goed}</strong> / ${data.totaal} <span style="font-size:10px; color:var(--text-muted);">(${percentage}%)</span></div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: ${percentage}%;"></div>
-                    </div>
-                </td>
-                <td>${getMedaille(percentage, data.totaal)}</td>
-            `;
-            tbody.appendChild(row);
-        }
-
-        document.getElementById('statTotaalSommen').innerText = totaalSommenApp;
-        document.getElementById('statTotaalGoed').innerText = totaalGoedApp;
-        document.getElementById('statBesteOnderdeel').innerText = besteOnderdeel + (bestePerc !== -1 ? ` (${bestePerc}%)` : '');
-        document.getElementById('statMinderOnderdeel').innerText = minsteOnderdeel + (minstePerc !== 101 ? ` (${minstePerc}%)` : '');
-    }
-
-    function toggleTile(cat) {
-        const tile = document.getElementById(`tile-${cat}`);
-        const idx = state.selectedCategories.indexOf(cat);
-        if(idx > -1) {
-            state.selectedCategories.splice(idx, 1);
-            tile.classList.remove('active');
-        } else {
-            state.selectedCategories.push(cat);
-            tile.classList.add('active');
-        }
-        document.getElementById('tafelInlinePanel').style.display = state.selectedCategories.includes('tafels') ? 'block' : 'none';
-    }
-
-    function bouwTafelCheckboxes() {
-        const container = document.getElementById('tafelSubCheckboxes');
-        container.innerHTML = '';
-        for (let t = 8; t <= 19; t++) {
-            const activeClass = state.selectedTafels.includes(t) ? 'active' : '';
-            container.innerHTML += `<button type="button" class="btn-sub ${activeClass}" id="tfbtn-${t}" onclick="toggleTafelNummer(${t})">${t}</button>`;
-        }
-    }
-
-    function toggleTafelNummer(t) {
-        const btn = document.getElementById(`tfbtn-${t}`);
-        const idx = state.selectedTafels.indexOf(t);
-        if (idx > -1) {
-            if(state.selectedTafels.length > 1) {
-                state.selectedTafels.splice(idx, 1);
-                btn.classList.remove('active');
-            }
-        } else {
-            state.selectedTafels.push(t);
-            btn.classList.add('active');
-        }
-    }
-
-    function setLength(l) {
-        state.sommenPerOefening = l;
-        document.querySelectorAll('[id^="len-"]').forEach(b => b.classList.remove('active'));
-        document.getElementById(`len-${l}`).classList.add('active');
-    }
-
-    function setRange(r) {
-        state.getalbereik = r;
-        document.querySelectorAll('[id^="range-"]').forEach(b => b.classList.remove('active'));
-        document.getElementById(`range-${r}`).classList.add('active');
-    }
-
-    function terugNaarHome() { 
-        updateStatsUI();
-        switchView('dashboard'); 
-    }
-    
-    function switchView(viewId) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(`view-${viewId}`).classList.add('active');
-        window.scrollTo(0,0);
-    }
-
-    function updateHistoryUI() {
-        const container = document.getElementById('historyContainer');
-        if(state.history.length === 0) {
-            container.innerHTML = `<p style="padding:6px; color:var(--text-muted); font-size:11px;">Nog geen eerdere resultaten opgeslagen.</p>`;
-            return;
-        }
-        container.innerHTML = state.history.slice(0, 4).map(h => `
-            <div class="res-row">
-                <strong>Blad (${h.aantalOnderdelen} ond.)</strong>
-                <span>Score: ${h.score} (${h.datum})</span>
-            </div>
-        `).join('');
-    }
-
-    function genereerSom(cat) {
-        let vraag = "", antwoord = "", isSplitsen = false;
-        let splitsData = null;
-
-        switch(cat) {
-            case 'tafels': {
-                let t = state.selectedTafels[Math.floor(Math.random() * state.selectedTafels.length)];
-                let m = Math.floor(Math.random() * 10) + 1;
-                vraag = `${m} × ${t} =`;
-                antwoord = (m * t).toString();
-                break;
-            }
-            case 'schatten': {
-                let typeSchat = Math.floor(Math.random() * 3);
-                if(typeSchat === 0) {
-                    let g1 = Math.floor(Math.random() * 400) + 201;
-                    let g2 = Math.floor(Math.random() * 300) + 101; 
-                    vraag = `Hoeveel is het ongeveer? (Rond af op honderdtallen):\n ${g1} + ${g2} ≈`;
-                    antwoord = (Math.round(g1 / 100) * 100 + Math.round(g2 / 100) * 100).toString();
-                } else if(typeSchat === 1) {
-                    let g1 = Math.floor(Math.random() * 800) + 400; 
-                    let g2 = Math.floor(Math.random() * 300) + 101; 
-                    vraag = `Hoeveel is het ongeveer? (Rond af op honderdtallen):\n ${g1} - ${g2} ≈`;
-                    antwoord = (Math.round(g1 / 100) * 100 - Math.round(g2 / 100) * 100).toString();
-                } else {
-                    let g1 = [29, 39, 49, 99][Math.floor(Math.random() * 4)];
-                    let g2 = Math.floor(Math.random() * 7) + 3;
-                    vraag = `Hoeveel is het ongeveer? (Rond af op tientallen):\n ${g1} × ${g2} ≈`;
-                    antwoord = (Math.round(g1 / 10) * 10 * g2).toString();
-                }
-                break;
-            }
-            case 'splitsen': {
-                isSplitsen = true;
-                let tot = Math.floor(Math.random() * 16) + 14; // t/m 30
-                let lDeel = Math.floor(Math.random() * (tot - 6)) + 3;
-                let rDeel = tot - lDeel;
-                let linksIngevuld = Math.random() > 0.5;
-                splitsData = { totaal: tot, links: linksIngevuld ? lDeel : '?', rechts: linksIngevuld ? '?' : rDeel };
-                antwoord = linksIngevuld ? rDeel.toString() : lDeel.toString();
-                break;
-            }
-            case 'breuken': {
-                let subB = Math.floor(Math.random() * 4);
-                if(subB === 0) {
-                    let nr = [12, 16, 20, 24, 32][Math.floor(Math.random() * 5)];
-                    vraag = `Wat is 3/4 van ${nr}?`;
-                    antwoord = ((nr / 4) * 3).toString();
-                } else if(subB === 1) {
-                    let nrs = [6, 8, 10, 12][Math.floor(Math.random() * 4)];
-                    vraag = `Vul de ontbrekende teller in:\n1/2 = .../${nrs}`;
-                    antwoord = (nrs / 2).toString();
-                } else if(subB === 2) {
-                    vraag = `Vereenvoudig de breuk zo ver mogelijk:\n8/12 = ... / 3`;
-                    antwoord = "2";
-                } else {
-                    vraag = `Haal de helen eruit:\n7/4 = ... (Geef op als bijv: 1 3/4)`;
-                    antwoord = "1 3/4";
-                }
-                break;
-            }
-            case 'breukencontext': {
-                // MINIMAAL 24 GEVARIEERDE CONTEXTSITUATIES (POOL VAN 24)
-                let poolBC = [
-                    { v: "Van een hardlooproute van [X] km heeft Tess 1/[Y] deel afgelegd. Hoeveel km heeft ze gerend?", f: (x, y) => x / y },
-                    { v: "In een klas zitten [X] kinderen. 2/[Y] deel zit op voetbal. Hoeveel kinderen zijn dat?", f: (x, y) => (x / y) * 2 },
-                    { v: "Een benzinetank heeft een inhoud van [X] liter. De tank is voor 3/[Y] gevuld. Hoeveel liter zit erin?", f: (x, y) => (x / y) * 3 },
-                    { v: "Daan krijgt [X] euro zakgeld per maand. Hij spaart 1/[Y] deel hiervan. Hoeveel euro spaart hij?", f: (x, y) => x / y },
-                    { v: "Een cake moet [X] minuten in de oven. Hij staat er nu 3/[Y] van de tijd in. Hoeveel minuten staat hij al in de oven?", f: (x, y) => (x / y) * 3 },
-                    { v: "Er liggen [X] koekjes in een trommel. Siem eet 1/[Y] deel op. Hoeveel koekjes eet Siem?", f: (x, y) => x / y },
-                    { v: "Een film duurt [X] minuten. Merel heeft al 4/[Y] deel gekeken. Hoeveel minuten heeft ze gezien?", f: (x, y) => (x / y) * 4 },
-                    { v: "Een boer heeft [X] koeien. 1/[Y] deel staat in de stal, de rest staat in de wei. Hoeveel koeien staan er in de stal?", f: (x, y) => x / y },
-                    { v: "De afstand naar opa en oma is [X] km. Na 1/[Y] deel van de rit stoppen we voor limonade. Na hoeveel km stoppen we?", f: (x, y) => x / y },
-                    { v: "Een chocoladereep bestaat uit [X] blokjes. Bram eet 2/[Y] deel op. Hoeveel blokjes eet Bram?", f: (x, y) => (x / y) * 2 },
-                    { v: "Voor een pizza is [X] gram kaas nodig. Sarah heeft al 3/[Y] deel geraspt. Hoeveel gram kaas is dat?", f: (x, y) => (x / y) * 3 },
-                    { v: "Op een parkeerplaats staan [X] auto's. 1/[Y] deel is elektrisch. Hoeveel elektrische auto's staan er?", f: (x, y) => x / y },
-                    { v: "Een basisschool heeft [X] leerlingen. 1/[Y] deel komt met de step. Hoeveel leerlingen stappen op de step?", f: (x, y) => x / y },
-                    { v: "In een boomgaard hangen [X] appels. 5/[Y] deel is al rijp om te plukken. Hoeveel appels zijn er rijp?", f: (x, y) => (x / y) * 5 },
-                    { v: "Een zwembad is gevuld met [X] liter water. Door de zon verdampt 1/[Y] deel. Hoeveel liter water is er verdampt?", f: (x, y) => x / y },
-                    { v: "Een boek telt [X] bladzijden. Lucas heeft 1/[Y] deel uit. Hoeveel bladzijden heeft Lucas gelezen?", f: (x, y) => x / y },
-                    { v: "Er zitten [X] kralen in een zakje. Fleur gebruikt 3/[Y] deel voor een armband. Hoeveel kralen gebruikt Fleur?", f: (x, y) => (x / y) * 3 },
-                    { v: "Een fietstocht is [X] km lang. De wielrenners hebben er al 4/[Y] deel op zitten. Hoeveel km hebben ze gefietst?", f: (x, y) => (x / y) * 4 },
-                    { v: "In een mand liggen [X] peren. 1/[Y] deel is beurs en moet weg. Hoeveel peren gooi je weg?", f: (x, y) => x / y },
-                    { v: "Lars heeft [X] knikkers gewonnen. Hij geeft 2/[Y] deel weg aan zijn broertje. Hoeveel knikkers geeft hij weg?", f: (x, y) => (x / y) * 2 },
-                    { v: "Een computergame kost [X] euro. Luuk krijgt 1/[Y] deel korting. Hoeveel euro korting krijgt Luuk?", f: (x, y) => x / y },
-                    { v: "Op een hondenshow zijn [X] honden aanwezig. 3/[Y] deel bestaat uit poedels. Hoeveel poedels doen er mee?", f: (x, y) => (x / y) * 3 },
-                    { v: "Een schooltuin is [X] vierkante meter groot. 1/[Y] deel is gereserveerd voor bloemen. Hoeveel vierkante meter bloemen is dat?", f: (x, y) => x / y },
-                    { v: "Voor een groot feest zijn [X] ballonnen opgeblazen. 1/[Y] deel knapt helaas voortijdig. Hoeveel ballonnen knappen er?", f: (x, y) => x / y }
-                ];
-                
-                let gekozenBc = poolBC[Math.floor(Math.random() * poolBC.length)];
-                let y = [4, 5, 6, 8, 10][Math.floor(Math.random() * 5)];
-                let factor = Math.floor(Math.random() * 5) + 4; // zorgt voor mooie ronde deeltallen
-                let x = y * factor;
-                
-                vraag = gekozenBc.v.replace("[X]", x).replace("[Y]", y);
-                antwoord = gekozenBc.f(x, y).toString();
-                break;
-            }
-            case 'optellen_aftrekken': {
-                let max = state.getalbereik;
-                let n1 = Math.floor(Math.random() * (max * 0.6)) + 50;
-                let n2 = Math.floor(Math.random() * (max - n1 - 10)) + 10;
-                if(Math.random() > 0.5) {
-                    vraag = `${n1} + ${n2} =`;
-                    antwoord = (n1 + n2).toString();
-                } else {
-                    vraag = `${n1 + n2} - ${n1} =`;
-                    antwoord = n2.toString();
-                }
-                break;
-            }
-            case 'vermenigvuldigen': {
-                if(Math.random() > 0.5) {
-                    let k1 = Math.floor(Math.random() * 14) + 2;
-                    let k2 = Math.floor(Math.random() * 14) + 2;
-                    vraag = `${k1} × ${k2} =`;
-                    antwoord = (k1 * k2).toString();
-                } else {
-                    let k1 = [4, 6, 8, 5, 7][Math.floor(Math.random() * 5)];
-                    let k2 = [14, 25, 125, 230, 110][Math.floor(Math.random() * 5)];
-                    vraag = `${k1} × ${k2} =`;
-                    antwoord = (k1 * k2).toString();
-                }
-                break;
-            }
-            case 'delen': {
-                if(Math.random() > 0.5) {
-                    let d2 = Math.floor(Math.random() * 17) + 3;
-                    let res = Math.floor(Math.random() * 10) + 2;
-                    vraag = `${d2 * res} : ${d2} =`;
-                    antwoord = res.toString();
-                } else {
-                    let deelsom = [{v:"84 : 4", a:21}, {v:"450 : 9", a:50}, {v:"725 : 5", a:145}, {v:"360 : 6", a:60}][Math.floor(Math.random()*4)];
-                    vraag = `${deelsom.v} =`;
-                    antwoord = deelsom.a.toString();
-                }
-                break;
-            }
-            case 'redactie': {
-                // MINIMAAL 24 UNIEKE EN GELEDEN REDACTIESOMMEN (POOL VAN 24)
-                let poolRedactie = [
-                    { v: "Een dierentuin verkoopt [X] familietickets in de ochtend en [Y] in de middag. Hoeveel familietickets zijn er in totaal verkocht?", f: (x, y) => x + y },
-                    { v: "Een bakker maakt [X] croissantjes. Aan het einde van de dag heeft hij er nog [Y] over. Hoeveel croissantjes zijn er verkocht?", f: (x, y) => x - y },
-                    { v: "Voor een barbecuefeest koopt de slager [X] luxe barbecuepakketten. In elk pakket zitten [Y] stuks vlees. Hoeveel stuks vlees zijn dit in totaal?", f: (x, y) => x * y },
-                    { v: "Een basisschool verdeelt [X] potloden eerlijk over [Y] klassen. Hoeveel potloden krijgt elke klas?", f: (x, y) => x / y },
-                    { v: "Mila spaart voor een nieuwe fiets van [X] euro. Ze heeft al [Y] euro in haar spaarpot zitten. Hoeveel euro moet ze nog sparen?", f: (x, y) => x - y },
-                    { v: "Er staan [X] rijen met stoelen in de aula van de school. In elke rij staan precies [Y] stoelen. Hoeveel stoelen staan er in totaal?", f: (x, y) => x * y },
-                    { v: "Een vrachtwagen vervoert [X] kratten appels. Bij de eerste winkel lost hij [Y] kratten. Hoeveel kratten met appels blijven er over?", f: (x, y) => x - y },
-                    { v: "Een bibliotheek krijgt een levering van [X] nieuwe boeken. Ze verdelen de boeken gelijkmatig over [Y] planken. Hoeveel boeken komen er op elke plank?", f: (x, y) => x / y },
-                    { v: "Sem fietst elke dag [X] km naar school en [X] km terug naar huis. Hoeveel km fietst Sem in [Y] schooldagen in totaal?", f: (x, y) => (x * 2) * y },
-                    { v: "In een bioscoopzaal zitten [X] mensen te kijken naar een spannende film. [Y] mensen verlaten de zaal tijdens de pauze. Hoeveel mensen blijven er over?", f: (x, y) => x - y },
-                    { v: "Een supermarkt vult de schappen aan met [X] dozen frisdrank. In iedere doos zitten [Y] flessen. Hoeveel flessen frisdrank zijn dit in totaal?", f: (x, y) => x * y },
-                    { v: "Een groep van [X] vrienden gaat naar een pretpark. Ze betalen in totaal [Y] euro voor de entreekaartjes. Hoeveel kost één entreekaartje?", f: (x, y) => y / x },
-                    { v: "Sophie koopt op de markt [X] gram aardbeien en [Y] gram blauwe bessen. Hoeveel gram fruit heeft Sophie in totaal gekocht?", f: (x, y) => x + y },
-                    { v: "Een marathonloper heeft al [X] meter afgelegd. De totale marathon is [Y] meter lang. Hoeveel meter moet de loper nog rennen?", f: (x, y) => y - x },
-                    { v: "Een bloemist maakt boeketten. Ze gebruikt [X] rozen per boeket. Hoeveel rozen heeft ze nodig om [Y] boeketten te maken?", f: (x, y) => x * y },
-                    { v: "Er moeten [X] tennballen verpakt worden in kokers. In elke koker passen [Y] tennisballen. Hoeveel kokers zijn er nodig?", f: (x, y) => x / y },
-                    { v: "Daan verdient [X] euro per uur met zijn bijbaantje. Vorige week heeft hij [Y] uur gewerkt. Hoeveel euro heeft hij in totaal verdiend?", f: (x, y) => x * y },
-                    { v: "Een grote doos met legoblokjes weegt [X] gram. De lege plastic doos zelf weegt [Y] gram. Hoeveel gram wegen alle legoblokjes samen?", f: (x, y) => x - y },
-                    { v: "Voor een knutselproject heeft de juf [X] rollen touw gekocht. Elke rol is precies [Y] meter lang. Hoeveel meter touw is er in totaal?", f: (x, y) => x * y },
-                    { v: "Een schoolbus start de rit met [X] kinderen. Bij de eerste halte stappen er [Y] kinderen uit, en komen er 5 bij. Hoeveel kinderen zitten er nu in de bus?", f: (x, y) => (x - y) + 5 },
-                    { v: "Emma bezorgt [X] folders per week. Hoeveel folders bezorgt zij in totaal in [Y] weken?", f: (x, y) => x * y },
-                    { v: "Een fabriek verpakt [X] kilo suiker in zakken van [Y] kilo per stuk. Hoeveel suikerzakken worden er gevuld?", f: (x, y) => x / y },
-                    { v: "Op een verjaardagsfeestje krijgt Quinn [X] euro van zijn opa en [Y] euro van zijn tante. Hoeveel euro heeft hij in totaal gekregen?", f: (x, y) => x + y },
-                    { v: "Een voetbalstadion biedt plaats aan [X] toeschouwers. Tijdens een wedstrijd zijn er [Y] stoeltjes leeg. Hoeveel toeschouwers zijn er aanwezig?", f: (x, y) => x - y }
-                ];
-                
-                let rIndex = Math.floor(Math.random() * poolRedactie.length);
-                let gekozenRed = poolRedactie[rIndex];
-                
-                // Genereer logische en geschikte getallen op basis van de bewerking van de gekozen som
-                let x = 10, y = 5;
-                if (rIndex === 0 || rIndex === 12 || rIndex === 22) { // Optellen
-                    x = Math.floor(Math.random() * 300) + 150;
-                    y = Math.floor(Math.random() * 200) + 50;
-                } else if (rIndex === 1 || rIndex === 4 || rIndex === 6 || rIndex === 9 || rIndex === 13 || rIndex === 17 || rIndex === 23) { // Aftrekken
-                    x = Math.floor(Math.random() * 500) + 400;
-                    y = Math.floor(Math.random() * 300) + 50;
-                    if (rIndex === 13) { x = 12000; y = 42195; } // Marathon specials
-                } else if (rIndex === 2 || rIndex === 5 || rIndex === 10 || rIndex === 14 || rIndex === 18 || rIndex === 20) { // Vermenigvuldigen
-                    x = Math.floor(Math.random() * 15) + 8;
-                    y = [5, 6, 8, 10, 12][Math.floor(Math.random() * 5)];
-                } else if (rIndex === 3 || rIndex === 7 || rIndex === 15 || rIndex === 21) { // Delen
-                    y = Math.floor(Math.random() * 6) + 4;
-                    let factor = Math.floor(Math.random() * 12) + 8;
-                    x = y * factor;
-                } else if (rIndex === 11) { // Entreekaartjes kosten
-                    x = Math.floor(Math.random() * 4) + 4; // vrienden
-                    let prijs = Math.floor(Math.random() * 5) + 12; // prijs per ticket
-                    y = x * prijs;
-                } else if (rIndex === 8) { // Sem fietst
-                    x = Math.floor(Math.random() * 4) + 2;
-                    y = 5;
-                } else if (rIndex === 16) { // Uren werken
-                    x = 12; // loon
-                    y = Math.floor(Math.random() * 6) + 4;
-                } else if (rIndex === 19) { // Bushalte
-                    x = 24; y = 8;
-                }
-                
-                vraag = gekozenRed.v.replace("[X]", x).replace("[Y]", y);
-                antwoord = gekozenRed.f(x, y).toString();
-                break;
-            }
-        }
-
-        return { vraag, antwoord, isSplitsen, splitsData };
-    }
-
-    function genereerWerkblad() {
-        if (state.selectedCategories.length === 0) {
-            alert("Kies eerst minimaal één onderdeel om te oefenen!");
-            return;
-        }
-
-        const container = document.getElementById('worksheetContainer');
-        container.innerHTML = '';
-        geformatteerdeWerkbladSommen = [];
-
-        let globaleIndex = 0;
-
-        state.selectedCategories.forEach(cat => {
-            let header = document.createElement('div');
-            header.className = 'category-header';
-            header.innerText = categorieNamen[cat];
-            container.appendChild(header);
-
-            let subContainer = document.createElement('div');
-            subContainer.className = 'worksheet-container';
-
-            for(let i = 0; i < state.sommenPerOefening; i++) {
-                let somObj = genereerSom(cat);
-                somObj.categorie = cat;
-                somObj.index = globaleIndex;
-                geformatteerdeWerkbladSommen.push(somObj);
-
-                let row = document.createElement('div');
-                row.className = 'som-row';
-                row.id = `som-row-${globaleIndex}`;
-
-                if (somObj.isSplitsen) {
-                    // Compleet vernieuwde, prachtige en visuele structuur voor de splitsommen
-                    let linksHTML = somObj.splitsData.links === '?' 
-                        ? `<input type="text" class="splits-input-box" id="input-${globaleIndex}">` 
-                        : somObj.splitsData.links;
-                    
-                    let rechtsHTML = somObj.splitsData.rechts === '?' 
-                        ? `<input type="text" class="splits-input-box" id="input-${globaleIndex}">` 
-                        : somObj.splitsData.rechts;
-
-                    row.innerHTML = `
-                        <div class="som-vraag">Vul het missende getal in het splitsingsschema in:</div>
-                        <div class="visual-splits-diagram">
-                            <div class="splits-top">${somObj.splitsData.totaal}</div>
-                            <div class="splits-branches">
-                                <div class="splits-left">${linksHTML}</div>
-                                <div class="splits-rechts">${rechtsHTML}</div>
-                            </div>
-                        </div>
-                        <div class="feedback-icon" id="fb-${globaleIndex}"></div>
-                    `;
-                } else {
-                    row.innerHTML = `
-                        <div class="som-vraag">${somObj.vraag}</div>
-                        <div class="som-input-wrapper">
-                            <input type="text" class="som-input" id="input-${globaleIndex}" placeholder="?">
-                            <span class="feedback-icon" id="fb-${globaleIndex}"></span>
-                        </div>
-                    `;
-                }
-
-                subContainer.appendChild(row);
-                globaleIndex++;
-            }
-            container.appendChild(subContainer);
-        });
-
-        document.getElementById('btnControleer').style.display = 'block';
-        document.getElementById('btnNaarScore').style.display = 'none';
-
-        switchView('view-werkblad');
-    }
-
-    function nakijkenWerkblad() {
-        let totaalGemaakt = geformatteerdeWerkbladSommen.length;
-        let goedTelling = 0;
-        let updatesPerCategorie = {};
-
-        state.selectedCategories.forEach(c => {
-            updatesPerCategorie[c] = { goed: 0, totaal: 0 };
-        });
-
-        geformatteerdeWerkbladSommen.forEach(som => {
-            let inputEl = document.getElementById(`input-${som.index}`);
-            let rowEl = document.getElementById(`som-row-${som.index}`);
-            let fbEl = document.getElementById(`fb-${som.index}`);
-
-            let userAns = inputEl ? inputEl.value.trim().replace(',', '.') : "";
-            let targetAns = som.antwoord.trim().replace(',', '.');
-
-            updatesPerCategorie[som.categorie].totaal++;
-
-            if (userAns === targetAns) {
-                rowEl.className = "som-row correct";
-                fbEl.innerHTML = "✔️";
-                goedTelling++;
-                updatesPerCategorie[som.categorie].goed++;
-            } else {
-                rowEl.className = "som-row incorrect";
-                fbEl.innerHTML = `❌ <span style="font-size:11px; font-weight:normal; color:var(--danger);">(${som.antwoord})</span>`;
-            }
-        });
-
-        // Bereken behaalde XP punten
-        let verdiendePunten = goedTelling * 10;
-        state.xp += verdiendePunten;
-        localStorage.setItem('rk_points_v5', state.xp);
-        document.getElementById('xpDisplay').innerText = state.xp;
-
-        // Update de voortgang per categorie in de state
-        for (const [cat, data] of Object.entries(updatesPerCategorie)) {
-            state.progress[cat].totaal += data.totaal;
-            state.progress[cat].goed += data.goed;
-        }
-        localStorage.setItem('rk_progress_v5', JSON.stringify(state.progress));
-
-        // Voeg toe aan geschiedenis
-        let nu = new Date();
-        let datumStr = `${nu.getDate()}-${nu.getMonth()+1} ${nu.getHours()}:${(nu.getMinutes()<10?'0':'')+nu.getMinutes()}`;
-        state.history.unshift({
-            aantalOnderdelen: state.selectedCategories.length,
-            score: `${goedTelling} / ${totaalGemaakt}`,
-            datum: datumStr
-        });
-        localStorage.setItem('rk_history_v5', JSON.stringify(state.history));
-
-        // Update score evaluatiepagina velden
-        document.getElementById('evalScore').innerText = `${goedTelling} / ${totaalGemaakt}`;
-        document.getElementById('evalPoints').innerText = `+${verdiendePunten} Punten toegevoegd!`;
-        
-        let perc = (goedTelling / totaalGemaakt) * 100;
-        if (perc === 100) document.getElementById('evalFeedback').innerText = "Perfect gedaan! Je bent een echte meester! 👑";
-        else if (perc >= 80) document.getElementById('evalFeedback').innerText = "Super goed gewerkt! Een dikke gouden ster! 🥇";
-        else if (perc >= 60) document.getElementById('evalFeedback').innerText = "Mooi resultaat! Je bent goed op weg! 🥈";
-        else document.getElementById('evalFeedback').innerText = "Goed geoefend! Blijf het proberen en je wordt vanzelf beter! 🥉";
-
-        document.getElementById('btnControleer').style.display = 'none';
-        document.getElementById('btnNaarScore').style.display = 'block';
-        
-        updateHistoryUI();
-        window.scrollTo(0, document.body.scrollHeight);
-    }
-
-    function gaNaarEvaluatieScherm() {
-        switchView('view-evaluatie');
-    }
 </script>
-
 </body>
 </html>

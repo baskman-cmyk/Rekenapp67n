@@ -2,936 +2,701 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-    <title>Smarter RekenApp - Groep 6 & 7</title>
-    
-    <!-- iPad Portretmodus Optimalisatie -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <!-- HTML2PDF Client-Side PDF Generator Package -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smarter Rekenomgeving v5 - Met Werkblad PDF & Splitsen</title>
+    <!-- Tailwind CSS voor snelle styling en responsiviteit -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts voor een kindvriendelijk en modern lettertype -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Plus+Jakarta+Sans:wght@300..800&display=swap" rel="stylesheet">
+    <!-- html2pdf.js bibliotheek voor het genereren van de PDF-werkbladen -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
+
     <style>
-        :root {
-            --bg-main: #f4f7fe;
-            --bg-card: #ffffff;
-            --text-main: #1b2559;
-            --text-muted: #a3aed0;
-            --primary: #4318ff;
-            --primary-light: #f4f2ff;
-            --success: #05cd99;
-            --danger: #ee5d50;
-            --border: #e0e5f2;
-            --radius-lg: 20px;
-            --radius-md: 12px;
-            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0; padding: 0;
-            font-family: var(--font);
-            -webkit-tap-highlight-color: transparent;
-        }
-
         body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f0f7f4;
         }
-
-        .app-window {
-            width: 100%;
-            max-width: 768px;
-            min-height: 100vh;
-            background-color: var(--bg-main);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            padding-bottom: 90px; 
+        h1, h2, h3, .brand-font {
+            font-family: 'Fredoka', sans-serif;
         }
-
-        /* Top Bar Navigation */
-        .top-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 24px;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+        .view {
+            display: none;
         }
-
-        .profile-area { display: flex; align-items: center; gap: 14px; }
-        .profile-info h4 { font-size: 18px; font-weight: 700; }
-        .profile-info p { font-size: 13px; color: var(--text-muted); }
-
-        .btn-home {
-            background: var(--primary-light);
-            color: var(--primary);
-            border: none;
-            padding: 10px 16px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 14px;
+        .view.active {
+            display: block;
+        }
+        .category-card {
+            transition: all 0.2s ease-in-out;
             cursor: pointer;
         }
-
-        .score-container {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
+        .category-card:hover {
+            transform: translateY(-2px);
         }
-
-        .score-badge {
-            background: #fff3e0;
-            color: #ff9800;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 15px;
+        .category-card.selected {
+            border-color: #10b981;
+            background-color: #ecfdf5;
         }
-
-        .btn-reset-points {
-            background: none;
-            border: none;
-            color: var(--danger);
-            font-size: 11px;
-            cursor: pointer;
-            font-weight: 600;
-            text-decoration: underline;
-        }
-
-        /* Views */
-        .view { display: none; flex-direction: column; flex: 1; padding: 24px; }
-        .view.active { display: flex; }
-
-        .section-title { font-size: 20px; font-weight: 800; margin: 20px 0 10px 0; }
-        .sub-text { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
-
-        /* Dashboard Grid & Cards */
-        .dashboard-grid {
+        /* PDF Specifieke Layout Styling */
+        .worksheet-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1.5rem;
         }
-
-        .tile {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            height: 90px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.01);
-            transition: all 0.2s;
+        @media (max-width: 640px) {
+            .worksheet-container {
+                grid-template-columns: 1fr;
+            }
         }
-        .tile.active { border-color: var(--primary); background-color: #f9f8ff; }
-        .tile-icon { font-size: 24px; width: 44px; height: 44px; background: var(--bg-main); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
-        .tile h3 { font-size: 15px; font-weight: 700; }
-        .tile p { font-size: 11px; color: var(--text-muted); }
-
-        .config-block {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        .config-block h4 { margin-bottom: 12px; font-size: 14px; font-weight: 700; color: var(--text-main); }
-
-        /* Knoppen Groepen */
-        .btn-group { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
-        .btn-sub {
-            flex: 1; min-width: 65px; padding: 12px; background: var(--bg-main);
-            border: 1px solid transparent; border-radius: 10px;
-            font-weight: 700; font-size: 13px; color: var(--text-main);
-            cursor: pointer; text-align: center;
-        }
-        .btn-sub.active { background: var(--primary); color: white; }
-
-        .btn-action {
-            background: var(--primary); color: white; border: none; padding: 18px;
-            border-radius: 16px; font-weight: 700; font-size: 17px; cursor: pointer;
-            width: 100%; text-align: center; box-shadow: 0 4px 12px rgba(67, 24, 255, 0.15);
-            margin-top: 10px;
-        }
-        
-        /* PDF Download bar layout */
-        .print-actions-bar {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .btn-print {
-            background: #05cd99;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(5, 205, 153, 0.15);
-        }
-
-        .btn-print-alt {
-            background: #4318ff;
-            box-shadow: 0 4px 10px rgba(67, 24, 255, 0.15);
-        }
-        
-        .banner-safe-margin {
-            margin-bottom: 40px !important;
-        }
-
-        /* Quick Stats Grid */
-        .quick-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .stat-mini-card {
-            background: var(--bg-main);
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
-        .stat-mini-card p { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-        .stat-mini-card h5 { font-size: 14px; font-weight: 700; color: var(--text-main); margin-top: 2px; }
-
-        /* Progress Stats Styles */
-        .stats-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-        .stats-table th, .stats-table td { padding: 8px 6px; text-align: left; font-size: 12px; border-bottom: 1px solid var(--border); }
-        .stats-table th { font-weight: 700; color: var(--text-muted); }
-        
-        .progress-bar-bg { background: #e0e5f2; border-radius: 4px; width: 70px; height: 6px; display: inline-block; vertical-align: middle; margin-right: 6px; overflow: hidden; }
-        .progress-bar-fill { background: var(--success); height: 100%; width: 0%; transition: width 0.3s; }
-        .level-badge { font-weight: 700; font-size: 11px; padding: 2px 5px; border-radius: 5px; white-space: nowrap; }
-
-        /* WERKBLAD INDELING */
-        .category-header {
-            background: var(--primary-light);
-            color: var(--primary);
-            padding: 12px 18px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 800;
-            margin: 24px 0 12px 0;
-            border-left: 5px solid var(--primary);
-        }
-
-        .worksheet-container { display: flex; flex-direction: column; gap: 14px; }
-
         .som-row {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
+            background-color: #ffffff;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
         }
-
-        /* Visueel splitsen schema */
+        .som-row.correct {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+        }
+        .som-row.incorrect {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+        .som-vraag {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .som-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .som-input {
+            width: 5rem;
+            text-align: center;
+            padding: 0.25rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+        .som-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .category-header {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5rem;
+            color: #1f2937;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.25rem;
+        }
+        /* Splitsen Diagram Styling */
         .visual-splits-diagram {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
-            background: #fff;
-            padding: 10px;
-            border-radius: 12px;
-            min-width: 160px;
+            width: 140px;
+            margin: 0.5rem 0;
         }
         .splits-top {
-            background: var(--primary-light);
-            color: var(--primary);
-            border: 2px solid var(--primary);
-            padding: 6px 16px;
-            border-radius: 8px;
-            font-weight: 800;
-            font-size: 16px;
+            width: 50px;
+            height: 50px;
+            border: 3px solid #4b5563;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            background-color: #fff;
+            position: relative;
+            z-index: 10;
         }
         .splits-branches {
             display: flex;
             justify-content: space-between;
-            width: 100%;
+            width: 120px;
+            margin-top: 15px;
             position: relative;
-            padding-top: 10px;
         }
         .splits-branches::before {
             content: '';
             position: absolute;
-            top: 0; left: 25%; right: 25%;
-            height: 2px; background: var(--text-muted);
+            top: -18px;
+            left: 25px;
+            width: 70px;
+            height: 20px;
+            border-left: 3px solid #4b5563;
+            border-right: 3px solid #4b5563;
+            border-top: 3px solid #4b5563;
+            border-radius: 8px 8px 0 0;
+            z-index: 1;
         }
         .splits-left, .splits-rechts {
-            background: var(--bg-main);
-            border: 2px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 14px;
+            width: 45px;
+            height: 45px;
+            border: 3px solid #4b5563;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 700;
-            text-align: center;
-            min-width: 60px;
+            font-size: 1.125rem;
+            background-color: #fff;
+            position: relative;
+            z-index: 10;
         }
         .splits-input-box {
-            width: 50px;
-            height: 26px;
-            border: 2px dashed var(--primary);
-            border-radius: 4px;
+            width: 35px;
+            height: 35px;
+            border: 1px dashed #9ca3af;
+            border-radius: 50%;
             text-align: center;
-            font-weight: bold;
-            background: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #2563eb;
             outline: none;
-            color: var(--text-main);
         }
-
-        .som-vraag { font-size: 16px; font-weight: 700; line-height: 1.4; white-space: pre-line; flex: 1; }
-        .som-input-wrapper { width: 160px; display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
-        
-        .som-input {
-            width: 100%; max-width: 110px; height: 44px; border-radius: 8px;
-            border: 2px solid var(--border); background: var(--bg-main);
-            color: var(--text-main); font-size: 16px; text-align: center; font-weight: 700; outline: none;
-        }
-        .som-input:focus { border-color: var(--primary); background: #ffffff; }
-
-        /* Nakijk Statussen */
-        .som-row.correct { border-color: var(--success); background: #e6fcf5; }
-        .som-row.incorrect { border-color: var(--danger); background: #fff5f5; }
-        .feedback-icon { font-size: 18px; display: none; }
-        .som-row.correct .feedback-icon { display: inline; color: var(--success); }
-        .som-row.incorrect .feedback-icon { display: inline; color: var(--danger); }
-
-        .res-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 12px; }
-
-        /* Verborgen container voor PDF antwoorden-export */
-        #hiddenAnswerContainer {
-            display: none;
-            background: white;
-            color: black;
-            padding: 30px;
-        }
-
-        .pdf-export-mode {
-            background: white !important;
-            color: black !important;
-            padding: 30px !important;
-        }
-        .pdf-export-mode .som-row {
-            border: 1px solid #ccc !important;
-            background: white !important;
-            margin-bottom: 8px;
-        }
-        .pdf-export-mode .som-input {
-            background: #fff !important;
-            border: 1px solid #999 !important;
-        }
-
-        /* PRINT STYLES */
-        @media print {
-            body { background: white; color: black; }
-            .top-nav, .print-actions-bar, .btn-action, .feedback-icon { display: none !important; }
-            .app-window { max-width: 100%; width: 100%; padding-bottom: 0; min-height: auto; }
-            .view { padding: 0; display: none; }
-            .view.active { display: flex; }
-            .som-row { border: 1px solid #ccc; background: white !important; page-break-inside: avoid; }
-            .som-input { border: 1px solid #999; background: white !important; }
+        .feedback-icon {
+            font-size: 1.25rem;
+            font-weight: bold;
+            width: 24px;
+            text-align: center;
         }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
 
-<div class="app-window">
-    
-    <!-- Top Navigatiebalk -->
-    <div class="top-nav">
-        <div class="profile-area">
-            <button class="btn-home" onclick="terugNaarHome()">🏠 Home</button>
-            <div class="profile-info">
-                <h4>Mijn Reken Dashboard</h4>
-                <p>Niveau Groep 6 & 7</p>
-            </div>
-        </div>
-        <div class="score-container">
-            <div class="score-badge">Punten: 🏆 <span id="xpDisplay">0</span></div>
-            <button class="btn-reset-points" onclick="resetPunten()">🗑️ reset punten</button>
-        </div>
-    </div>
-
-    <!-- VIEW 1: CONFIGURATIE & OPTIES -->
-    <div id="view-dashboard" class="view active">
+    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
         
-        <div class="section-title" style="margin-top:5px;">1. Kies je Oefeningen 🎯</div>
-        <p class="sub-text">Selecteer één of meerdere onderdelen om op het werkblad te plaatsen:</p>
-        
-        <div class="dashboard-grid">
-            <div class="tile" id="tile-tafels" onclick="toggleTile('tafels')">
-                <div class="tile-icon">🦘</div>
-                <div><h3>1. Tafels (8-19)</h3><p>Kies je tafels</p></div>
-            </div>
-            <div class="tile" id="tile-schatten" onclick="toggleTile('schatten')">
-                <div class="tile-icon">🎯</div>
-                <div><h3>2. Schatten</h3><p>Grote getallen</p></div>
-            </div>
-            <div class="tile" id="tile-splitsen" onclick="toggleTile('splitsen')">
-                <div class="tile-icon">🪵</div>
-                <div><h3>3. Splitsommen</h3><p>Visueel t/m 30</p></div>
-            </div>
-            <div class="tile" id="tile-breuken" onclick="toggleTile('breuken')">
-                <div class="tile-icon">🍕</div>
-                <div><h3>4. Breuken Mix</h3><p>Standaard breuken</p></div>
-            </div>
-            <div class="tile" id="tile-breukencontext" onclick="toggleTile('breukencontext')">
-                <div class="tile-icon">🚙</div>
-                <div><h3>4b. Breuk in Context</h3><p>Verhaaltjes formats</p></div>
-            </div>
-            <div class="tile" id="tile-optellen_aftrekken" onclick="toggleTile('optellen_aftrekken')">
-                <div class="tile-icon">➕</div>
-                <div><h3>5. +/- Sommen</h3><p>Instelbaar bereik</p></div>
-            </div>
-            <div class="tile" id="tile-vermenigvuldigen" onclick="toggleTile('vermenigvuldigen')">
-                <div class="tile-icon">✖️</div>
-                <div><h3>6. Keersommen</h3><p>Tafels & Groot</p></div>
-            </div>
-            <div class="tile" id="tile-delen" onclick="toggleTile('delen')">
-                <div class="tile-icon">➗</div>
-                <div><h3>7. Deelsommen</h3><p>Tafels & Groot</p></div>
-            </div>
-            <div class="tile" id="tile-redactie" onclick="toggleTile('redactie')" style="grid-column: span 2;">
-                <div class="tile-icon">📝</div>
-                <div><h3>8. Redactiesommen</h3><p>Rijke variatie aan verhaaltjessommen</p></div>
-            </div>
-        </div>
-
-        <!-- Sub-panel: Tafel Selectie vooraf -->
-        <div class="config-block" id="tafelInlinePanel" style="display:none;">
-            <h4>Kies welke tafels mee mogen doen op het blad:</h4>
-            <div class="btn-group" id="tafelSubCheckboxes"></div>
-        </div>
-
-        <!-- Instelling Aantal sommen per geselecteerde oefening -->
-        <div class="config-block">
-            <h4>2. Aantal opdrachten PER OEFENING:</h4>
-            <div class="btn-group">
-                <button class="btn-sub active" id="len-10" onclick="setLength(10)">10 sommen</button>
-                <button class="btn-sub" id="len-15" onclick="setLength(15)">15 sommen</button>
-                <button class="btn-sub" id="len-20" onclick="setLength(20)">20 sommen</button>
-            </div>
-        </div>
-
-        <!-- Instelling Getalbereik (+/- sommen) -->
-        <div class="config-block">
-            <h4>3. Getalbereik (voor onderdeel 5: Optellen/Aftrekken):</h4>
-            <div class="btn-group">
-                <button class="btn-sub active" id="range-1000" onclick="setRange(1000)">Tot 1.000</button>
-                <button class="btn-sub" id="range-10000" onclick="setRange(10000)">Tot 10.000</button>
-                <button class="btn-sub" id="range-100000" onclick="setRange(100000)">Tot 100.000</button>
-            </div>
-        </div>
-
-        <button class="btn-action" onclick="genereerWerkblad()">Oefenblad Genereren 🚀</button>
-
-        <!-- Voortgangs & Statistieken Dashboard -->
-        <div class="section-title">Mijn Voortgang & Medailles 📊</div>
-        <div class="config-block" style="padding: 12px;">
-            <div class="quick-stats-grid">
-                <div class="stat-mini-card">
-                    <p>Sommen Gemaakt</p>
-                    <h5 id="statTotaalSommen">0</h5>
-                </div>
-                <div class="stat-mini-card">
-                    <p>Totaal Goed</p>
-                    <h5 id="statTotaalGoed" style="color: var(--success);">0</h5>
-                </div>
-                <div class="stat-mini-card">
-                    <p>Beste Onderdeel 🏆</p>
-                    <h5 id="statBesteOnderdeel">-</h5>
-                </div>
-                <div class="stat-mini-card">
-                    <p>Extra Oefenen ⚠️</p>
-                    <h5 id="statMinderOnderdeel">-</h5>
+        <!-- Header / Navigatiebalk -->
+        <header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <span class="text-4xl">🎒</span>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-wide">Smarter Rekenblad</h1>
+                    <p class="text-blue-100 text-sm">Genereer oefeningen en download als PDF</p>
                 </div>
             </div>
-
-            <table class="stats-table">
-                <thead>
-                    <tr>
-                        <th>Onderdeel</th>
-                        <th>Score</th>
-                        <th>Niveau</th>
-                    </tr>
-                </thead>
-                <tbody id="statsTableBody"></tbody>
-            </table>
-        </div>
-
-        <div class="section-title">Eerder behaalde resultaten 📈</div>
-        <div id="historyContainer" style="background:white; border:1px solid var(--border); border-radius:14px; padding:6px;" class="banner-safe-margin"></div>
-    </div>
-
-    <!-- VIEW 2: HET DIGITALE WERKBLAD & PDF OPTIONS -->
-    <div id="view-werkblad" class="view">
-        <div class="print-actions-bar">
-            <button class="btn-print" onclick="downloadWerkbladPDF()">📥 Download Werkblad (PDF)</button>
-            <button class="btn-print btn-print-alt" onclick="downloadAntwoordenPDF()">🔑 Download Antwoorden (PDF)</button>
-        </div>
-        
-        <div class="section-title" style="margin-top: 0;">Mijn Oefenblad 📝</div>
-        <p class="sub-text">Download het werkblad en het antwoordenblad direct als PDF-bestanden.</p>
-        
-        <!-- Dit gedeelte wordt gedownload als Werkblad PDF -->
-        <div id="pdfWorksheetWrapper">
-            <div id="worksheetContainer">
-                <!-- Gecategoriseerde sommen worden hier geladen -->
+            <!-- Score & Statistieken Widget -->
+            <div class="flex items-center gap-4 bg-white/10 px-4 py-2 rounded-full border border-white/20">
+                <div class="text-center sm:text-right">
+                    <p class="text-xs uppercase tracking-wider text-blue-200">Totale Score</p>
+                    <p class="text-lg font-bold"><span id="xpDisplay">0</span> <span class="text-yellow-300 text-sm">XP ✨</span></p>
+                </div>
+                <button onclick="switchView('dashboard')" class="bg-white text-indigo-700 font-semibold px-4 py-1.5 rounded-full text-sm hover:bg-blue-50 transition shadow-sm">
+                    🏠 Home
+                </button>
             </div>
-        </div>
+        </header>
 
-        <!-- Eerste knop om digitaal na te kijken -->
-        <button class="btn-action" id="btnControleer" style="margin-top: 30px;" onclick="nakijkenWerkblad()">Digitaal Controleren ✔️</button>
-        
-        <!-- Extra knop die verschijnt NA het nakijken -->
-        <button class="btn-action banner-safe-margin" id="btnNaarScore" style="margin-top: 10px; background: #ff9800; display: none;" onclick="gaNaarEvaluatieScherm()">Bekijk Mijn Score 📊</button>
-    </div>
-
-    <!-- VIEW 3: RESULTAAT EVALUATIE -->
-    <div id="view-evaluatie" class="view">
-        <div class="section-title">Mooi werk! 🌟</div>
-        <div style="background:white; border:1px solid var(--border); border-radius:24px; padding:32px; text-align: center; margin-top:20px;">
-            <h2 style="font-size: 44px; color: var(--primary);" id="evalScore">0 / 0</h2>
-            <p style="font-size: 18px; font-weight: 700; margin: 16px 0;" id="evalFeedback">Goed gedaan!</p>
-            <p style="color: #ff9800; font-weight:700; font-size:16px; margin-bottom: 32px;" id="evalPoints">+0 Punten toegevoegd!</p>
-            <button class="btn-action banner-safe-margin" onclick="terugNaarHome()">Nieuw Oefenblad Maken 🏠</button>
-        </div>
-    </div>
-
-</div>
-
-<!-- Onzichtbare container die klaargemaakt wordt voor de Antwoorden-PDF -->
-<div id="hiddenAnswerContainer"></div>
-
-<script>
-    const categorieNamen = {
-        'tafels': '1. Tafels (8-19)',
-        'schatten': '2. Schatten',
-        'splitsen': '3. Splitsommen',
-        'breuken': '4. Breuken Mix',
-        'breukencontext': '4b. Breuk in Context',
-        'optellen_aftrekken': '5. +/- Sommen',
-        'vermenigvuldigen': '6. Keersommen',
-        'delen': '7. Deelsommen',
-        'redactie': '8. Redactiesommen'
-    };
-
-    let state = {
-        xp: parseInt(localStorage.getItem('rk_points_v5')) || 0,
-        history: JSON.parse(localStorage.getItem('rk_history_v5')) || [],
-        progress: JSON.parse(localStorage.getItem('rk_progress_v5')) || {
-            'tafels': { totaal: 0, goed: 0 },
-            'schatten': { totaal: 0, goed: 0 },
-            'splitsen': { totaal: 0, goed: 0 },
-            'breuken': { totaal: 0, goed: 0 },
-            'breukencontext': { totaal: 0, goed: 0 },
-            'optellen_aftrekken': { totaal: 0, goed: 0 },
-            'vermenigvuldigen': { totaal: 0, goed: 0 },
-            'delen': { totaal: 0, goed: 0 },
-            'redactie': { totaal: 0, goed: 0 }
-        },
-        selectedCategories: [],
-        selectedTafels: [8, 9, 10, 12],
-        sommenPerOefening: 10,
-        getalbereik: 1000
-    };
-
-    let geformatteerdeWerkbladSommen = [];
-
-    document.getElementById('xpDisplay').innerText = state.xp;
-    updateHistoryUI();
-    updateStatsUI();
-    bouwTafelCheckboxes();
-
-    function resetPunten() {
-        if (confirm("Weet je zeker dat je alle verdiende punten wilt resetten naar 0?")) {
-            state.xp = 0;
-            localStorage.setItem('rk_points_v5', 0);
-            document.getElementById('xpDisplay').innerText = 0;
-        }
-    }
-
-    function getMedaille(percentage, totaalGemaakt) {
-        if (totaalGemaakt === 0) return `<span class="level-badge" style="background:#e0e5f2; color:#a3aed0;">Geen data</span>`;
-        if (percentage < 60) return `<span class="level-badge" style="background:#ffebee; color:#c62828;">🥉 Beginner</span>`;
-        if (percentage < 80) return `<span class="level-badge" style="background:#e8f5e9; color:#2e7d32;">🥈 Goed</span>`;
-        if (percentage < 95) return `<span class="level-badge" style="background:#e3f2fd; color:#1565c0;">🥇 Ster</span>`;
-        return `<span class="level-badge" style="background:#fff8e1; color:#f57f17;">👑 Meester</span>`;
-    }
-
-    function updateStatsUI() {
-        const tbody = document.getElementById('statsTableBody');
-        tbody.innerHTML = '';
-        let totaalSommenApp = 0, totaalGoedApp = 0, besteOnderdeel = "-", bestePerc = -1, minsteOnderdeel = "-", minstePerc = 101;
-
-        for (const [key, data] of Object.entries(state.progress)) {
-            totaalSommenApp += data.totaal; totaalGoedApp += data.goed;
-            let percentage = data.totaal > 0 ? Math.round((data.goed / data.totaal) * 100) : 0;
+        <!-- VIEW 1: DASHBOARD (CONFIGURATIE) -->
+        <main id="view-dashboard" class="view active p-6 md:p-8 space-y-8">
             
-            if (data.totaal >= 5) {
-                if (percentage > bestePerc) { bestePerc = percentage; besteOnderdeel = categorieNamen[key].split('. ')[1]; }
-                if (percentage < minstePerc) { minstePerc = percentage; minsteOnderdeel = categorieNamen[key].split('. ')[1]; }
-            }
+            <!-- Configuratie Opties -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Getalbereik instellen -->
+                <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">🔢 1. Kies het maximale getalbereik</h3>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setBereik(10)" id="btn-b-10" class="bereik-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">10</button>
+                        <button onclick="setBereik(20)" id="btn-b-20" class="bereik-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">20</button>
+                        <button onclick="setBereik(100)" id="btn-b-100" class="bereik-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">100</button>
+                        <button onclick="setBereik(1000)" id="btn-b-1000" class="bereik-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">1000</button>
+                    </div>
+                </div>
+
+                <!-- Sommen per onderdeel -->
+                <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">📝 2. Aantal sommen per onderdeel</h3>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setSomAantal(5)" id="btn-s-5" class="som-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">5</button>
+                        <button onclick="setSomAantal(10)" id="btn-s-10" class="som-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">10</button>
+                        <button onclick="setSomAantal(15)" id="btn-s-15" class="som-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">15</button>
+                        <button onclick="setSomAantal(20)" id="btn-s-20" class="som-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">20</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Onderdelen Selectie -->
+            <section>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">🎯 3. Selecteer de gewenste categorieën</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="categoriesGrid">
+                    <!-- Dynamic cards injected via JavaScript -->
+                </div>
+            </section>
+
+            <!-- Actieknop -->
+            <div class="flex justify-center pt-4">
+                <button onclick="genereerWerkblad()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl px-12 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
+                    Oefenblad Genereren 🚀
+                </button>
+            </div>
+
+            <!-- Historie & Voortgang Overzicht -->
+            <hr class="border-gray-200 my-6">
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">📜 Recente Resultaten</h3>
+                    <div id="historyContainer" class="space-y-2 max-h-48 overflow-y-auto pr-2 text-sm text-gray-600">
+                        <!-- Geschiedenis regels -->
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">📊 Nauwkeurigheid per onderdeel</h3>
+                    <div id="accuracyStats" class="space-y-3 text-sm">
+                        <!-- Voortgang bars -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- VIEW 2: WERKBLAD WEERGAVE -->
+        <main id="view-werkblad" class="view p-6 md:p-8 space-y-6">
             
-            let row = document.createElement('tr');
-            row.innerHTML = `
-                <td style="font-weight:600;">${categorieNamen[key]}</td>
-                <td>
-                    <div style="margin-bottom: 2px;"><strong>${data.goed}</strong> / ${data.totaal} <span style="font-size:10px; color:var(--text-muted);">(${percentage}%)</span></div>
-                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${percentage}%;"></div></div>
-                </td>
-                <td>${getMedaille(percentage, data.totaal)}</td>
-            `;
-            tbody.appendChild(row);
-        }
-        document.getElementById('statTotaalSommen').innerText = totaalSommenApp;
-        document.getElementById('statTotaalGoed').innerText = totaalGoedApp;
-        document.getElementById('statBesteOnderdeel').innerText = besteOnderdeel + (bestePerc !== -1 ? ` (${bestePerc}%)` : '');
-        document.getElementById('statMinderOnderdeel').innerText = minsteOnderdeel + (minstePerc !== 101 ? ` (${minstePerc}%)` : '');
-    }
+            <!-- PDF Download Knoppenbalk -->
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-100 p-4 rounded-xl border border-slate-200">
+                <div class="flex gap-2">
+                    <button onclick="downloadWerkbladPDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow">
+                        📄 Download PDF
+                    </button>
+                    <button onclick="downloadAntwoordenPDF()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow">
+                        🔑 Download Antwoorden
+                    </button>
+                </div>
+                <button onclick="switchView('dashboard')" class="text-gray-600 hover:text-gray-900 text-sm font-semibold">
+                    ❌ Annuleren & Terug
+                </button>
+            </div>
 
-    function toggleTile(cat) {
-        const tile = document.getElementById(`tile-${cat}`);
-        const idx = state.selectedCategories.indexOf(cat);
-        if(idx > -1) { state.selectedCategories.splice(idx, 1); tile.classList.remove('active'); }
-        else { state.selectedCategories.push(cat); tile.classList.add('active'); }
-        document.getElementById('tafelInlinePanel').style.display = state.selectedCategories.includes('tafels') ? 'block' : 'none';
-    }
+            <!-- Het feitelijke printbare werkblad pakket -->
+            <div id="pdfWorksheetWrapper" class="bg-white p-4 rounded-lg">
+                <!-- Kopgegevens voor het fysieke werkblad -->
+                <div class="border-b-2 border-gray-300 pb-4 mb-6 flex justify-between items-end">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 brand-font">Mijn Smarter Rekenblad</h2>
+                        <p class="text-sm text-gray-500">Naam: ________________________  Datum: ____________</p>
+                    </div>
+                    <div class="text-right text-xs text-gray-400">
+                        Gegenereerd via Smarter Rekenomgeving v5
+                    </div>
+                </div>
 
-    function bouwTafelCheckboxes() {
-        const container = document.getElementById('tafelSubCheckboxes');
-        container.innerHTML = '';
-        for (let t = 8; t <= 19; t++) {
-            const activeClass = state.selectedTafels.includes(t) ? 'active' : '';
-            container.innerHTML += `<button type="button" class="btn-sub ${activeClass}" id="tfbtn-${t}" onclick="toggleTafelNummer(${t})">${t}</button>`;
-        }
-    }
+                <!-- Dynamische sommen container -->
+                <div id="worksheetContainer"></div>
+            </div>
 
-    function toggleTafelNummer(t) {
-        const btn = document.getElementById(`tfbtn-${t}`);
-        const idx = state.selectedTafels.indexOf(t);
-        if (idx > -1) { if(state.selectedTafels.length > 1) { state.selectedTafels.splice(idx, 1); btn.classList.remove('active'); } }
-        else { state.selectedTafels.push(t); btn.classList.add('active'); }
-    }
+            <!-- Actie- en Nakijkbalk onderaan het werkblad -->
+            <div class="border-t border-gray-200 pt-6 flex justify-end gap-4">
+                <button id="btnControleer" onclick="nakijkenWerkblad()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-lg shadow transition">
+                    Versturen & Nakijken ✔️
+                </button>
+                <button id="btnNaarScore" onclick="gaNaarEvaluatieScherm()" style="display:none;" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-3 rounded-lg shadow transition animate-bounce">
+                    Bekijk Je Score! 🎉
+                </button>
+            </div>
+        </main>
 
-    function setLength(l) {
-        state.sommenPerOefening = l;
-        document.querySelectorAll('[id^="len-"]').forEach(b => b.classList.remove('active'));
-        document.getElementById(`len-${l}`).classList.add('active');
-    }
-
-    function setRange(r) {
-        state.getalbereik = r;
-        document.querySelectorAll('[id^="range-"]').forEach(b => b.classList.remove('active'));
-        document.getElementById(`range-${r}`).classList.add('active');
-    }
-
-    function terugNaarHome() { updateStatsUI(); switchView('dashboard'); }
-    
-    function switchView(viewId) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.getElementById(`view-${viewId}`).classList.add('active');
-        window.scrollTo(0,0);
-    }
-
-    function updateHistoryUI() {
-        const container = document.getElementById('historyContainer');
-        if(state.history.length === 0) {
-            container.innerHTML = `<p style="padding:6px; color:var(--text-muted); font-size:11px;">Nog geen eerdere resultaten.</p>`;
-            return;
-        }
-        container.innerHTML = state.history.slice(0, 4).map(h => `
-            <div class="res-row"><strong>Blad (${h.aantalOnderdelen} ond.)</strong><span>Score: ${h.score} (${h.datum})</span></div>
-        `).join('');
-    }
-
-    function genereerSom(cat) {
-        let vraag = "", antwoord = "", isSplitsen = false, splitsData = null;
-        switch(cat) {
-            case 'tafels': {
-                let t = state.selectedTafels[Math.floor(Math.random() * state.selectedTafels.length)];
-                let m = Math.floor(Math.random() * 10) + 1;
-                vraag = `${m} × ${t} =`; antwoord = (m * t).toString(); break;
-            }
-            case 'schatten': {
-                let typeSchat = Math.floor(Math.random() * 3);
-                if(typeSchat === 0) {
-                    let g1 = Math.floor(Math.random() * 400) + 201; let g2 = Math.floor(Math.random() * 300) + 101; 
-                    vraag = `Hoeveel is het ongeveer? (Rond af op honderdtallen):\n ${g1} + ${g2} ≈`;
-                    antwoord = (Math.round(g1 / 100) * 100 + Math.round(g2 / 100) * 100).toString();
-                } else if(typeSchat === 1) {
-                    let g1 = Math.floor(Math.random() * 800) + 400; let g2 = Math.floor(Math.random() * 300) + 101; 
-                    vraag = `Hoeveel is het ongeveer? (Rond af op honderdtallen):\n ${g1} - ${g2} ≈`;
-                    antwoord = (Math.round(g1 / 100) * 100 - Math.round(g2 / 100) * 100).toString();
-                } else {
-                    let g1 = [29, 39, 49, 99][Math.floor(Math.random() * 4)]; let g2 = Math.floor(Math.random() * 7) + 3;
-                    vraag = `Hoeveel is het ongeveer? (Rond af op tientallen):\n ${g1} × ${g2} ≈`;
-                    antwoord = (Math.round(g1 / 10) * 10 * g2).toString();
-                }
-                break;
-            }
-            case 'splitsen': {
-                isSplitsen = true;
-                let tot = Math.floor(Math.random() * 16) + 14; let lDeel = Math.floor(Math.random() * (tot - 6)) + 3; let rDeel = tot - lDeel;
-                let linksIngevuld = Math.random() > 0.5;
-                splitsData = { totaal: tot, links: linksIngevuld ? lDeel : '?', rechts: linksIngevuld ? '?' : rDeel };
-                antwoord = linksIngevuld ? rDeel.toString() : lDeel.toString(); break;
-            }
-            case 'breuken': {
-                let subB = Math.floor(Math.random() * 4);
-                if(subB === 0) { let nr = [12, 16, 20, 24, 32][Math.floor(Math.random() * 5)]; vraag = `Wat is 3/4 van ${nr}?`; antwoord = ((nr / 4) * 3).toString(); } 
-                else if(subB === 1) { let nrs = [6, 8, 10, 12][Math.floor(Math.random() * 4)]; vraag = `Vul de ontbrekende teller in:\n1/2 = .../${nrs}`; antwoord = (nrs / 2).toString(); } 
-                else if(subB === 2) { vraag = `Vereenvoudig de breuk zo ver mogelijk:\n8/12 = ... / 3`; antwoord = "2"; } 
-                else { vraag = `Haal de helen eruit:\n7/4 = ... (Geef op als bijv: 1 3/4)`; antwoord = "1 3/4"; }
-                break;
-            }
-            case 'breukencontext': {
-                let poolBC = [
-                    { v: "Van een hardlooproute van [X] km heeft Tess 1/[Y] deel afgelegd. Hoeveel km heeft ze gerend?", f: (x, y) => x / y },
-                    { v: "In een klas zitten [X] children. 2/[Y] deel zit op voetbal. Hoeveel kinderen zijn dat?", f: (x, y) => (x / y) * 2 },
-                    { v: "Een tank heeft een inhoud van [X] liter. De tank is voor 3/[Y] gevuld. Hoeveel liter zit erin?", f: (x, y) => (x / y) * 3 }
-                ];
-                let gekozenBc = poolBC[Math.floor(Math.random() * poolBC.length)];
-                let y = [4, 5, 6, 8, 10][Math.floor(Math.random() * 5)]; let factor = Math.floor(Math.random() * 5) + 4; let x = y * factor;
-                vraag = gekozenBc.v.replace("[X]", x).replace("[Y]", y); antwoord = gekozenBc.f(x, y).toString(); break;
-            }
-            case 'optellen_aftrekken': {
-                let max = state.getalbereik; let n1 = Math.floor(Math.random() * (max * 0.6)) + 50; let n2 = Math.floor(Math.random() * (max - n1 - 10)) + 10;
-                if(Math.random() > 0.5) { vraag = `${n1} + ${n2} =`; antwoord = (n1 + n2).toString(); } 
-                else { vraag = `${n1 + n2} - ${n1} =`; antwoord = n2.toString(); } break;
-            }
-            case 'vermenigvuldigen': {
-                let k1 = Math.floor(Math.random() * 30) + 11;
-                let k2 = Math.floor(Math.random() * 7) + 3;
-                vraag = `${k1} × ${k2} =`; antwoord = (k1 * k2).toString(); break;
-            }
-            case 'delen': {
-                let d2 = Math.floor(Math.random() * 7) + 3;
-                let uitkomst = Math.floor(Math.random() * 15) + 4;
-                let d1 = d2 * uitkomst;
-                vraag = `${d1} : ${d2} =`; antwoord = uitkomst.toString(); break;
-            }
-            case 'redactie': {
-                let poolR = [
-                    { v: "Fleur heeft [X] euro. Ze koopt een boek van [Y] euro. Hoeveel geld houdt ze over?", f: (x, y) => x - y },
-                    { v: "Er gaan [X] appels in één kist. Hoeveel appels gaan er in [Y] kisten?", f: (x, y) => x * y },
-                    { v: "Een school heeft [X] leerlingen verdeeld over [Y] gelijke klassen. Hoeveel leerlingen zitten er per klas?", f: (x, y) => x / y }
-                ];
-                let gekozenR = poolR[Math.floor(Math.random() * poolR.length)];
-                let y = Math.floor(Math.random() * 5) + 4;
-                let x = gekozenR.v.includes("verdeeld") ? y * (Math.floor(Math.random() * 10) + 15) : Math.floor(Math.random() * 100) + 50;
-                vraag = gekozenR.v.replace("[X]", x).replace("[Y]", y); antwoord = gekozenR.f(x, y).toString(); break;
-            }
-        }
-        return { vraag, antwoord, isSplitsen, splitsData };
-    }
-
-    function genereerWerkblad() {
-        if(state.selectedCategories.length === 0) {
-            alert("Kies tenminste één onderdeel uit het dashboard om te oefenen!");
-            return;
-        }
-
-        geformatteerdeWerkbladSommen = [];
-        const container = document.getElementById('worksheetContainer');
-        container.innerHTML = '';
-
-        document.getElementById('btnControleer').style.display = 'block';
-        document.getElementById('btnNaarScore').style.display = 'none';
-
-        state.selectedCategories.forEach(cat => {
-            let catHeader = document.createElement('div');
-            catHeader.className = 'category-header';
-            catHeader.innerText = categorieNamen[cat];
-            container.appendChild(catHeader);
-
-            let subWrapper = document.createElement('div');
-            subWrapper.className = 'worksheet-container';
-
-            for(let i = 0; i < state.sommenPerOefening; i++) {
-                let sObj = genereerSom(cat);
-                let somIndex = geformatteerdeWerkbladSommen.length;
+        <!-- VIEW 3: EVALUATIE / SCORE SCHERM -->
+        <main id="view-evaluatie" class="view p-8 text-center space-y-6">
+            <div class="max-w-md mx-auto bg-gray-50 border border-gray-200 rounded-2xl p-8 shadow-sm">
+                <span class="text-6xl block mb-4">🏆</span>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Geweldig Oefenblad Afgerond!</h2>
+                <p id="evalFeedback" class="text-lg text-emerald-600 font-medium mb-6">Fantastisch gedaan! 🌟</p>
                 
-                sObj.category = cat;
-                sObj.globalIndex = somIndex;
-                geformatteerdeWerkbladSommen.push(sObj);
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-white p-4 rounded-xl border border-gray-100">
+                        <p class="text-xs text-gray-400 uppercase">Jouw Score</p>
+                        <p id="evalScore" class="text-2xl font-black text-gray-800">10 / 10</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-100">
+                        <p class="text-xs text-gray-400 uppercase">Beloning</p>
+                        <p id="evalPoints" class="text-sm font-bold text-indigo-600">+100 XP added!</p>
+                    </div>
+                </div>
 
-                let sRow = document.createElement('div');
-                sRow.className = 'som-row';
-                sRow.id = `somrow-${somIndex}`;
+                <button onclick="switchView('dashboard')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow">
+                    Terug naar het Dashboard 🏠
+                </button>
+            </div>
+        </main>
 
-                if(sObj.isSplitsen) {
-                    let sData = sObj.splitsData;
-                    let lContent = sData.links === '?' ? `<input type="text" class="splits-input-box" id="input-${somIndex}">` : sData.links;
-                    let rContent = sData.rechts === '?' ? `<input type="text" class="splits-input-box" id="input-${somIndex}">` : sData.rechts;
-                    
-                    sRow.innerHTML = `
-                        <div class="som-vraag">Vul het missende getal in het splitschema in:</div>
-                        <div class="visual-splits-diagram">
-                            <div class="splits-top">${sData.totaal}</div>
-                            <div class="splits-branches">
-                                <div class="splits-left">${lContent}</div>
-                                <div class="splits-rechts">${rContent}</div>
-                            </div>
-                        </div>
-                        <span class="feedback-icon" id="fb-${somIndex}"></span>
-                    `;
-                } else {
-                    sRow.innerHTML = `
-                        <div class="som-vraag">${sObj.vraag}</div>
-                        <div class="som-input-wrapper">
-                            <input type="text" class="som-input" id="input-${somIndex}" autocomplete="off">
-                        </div>
-                        <span class="feedback-icon" id="fb-${somIndex}"></span>
-                    `;
-                }
-                subWrapper.appendChild(sRow);
+    </div>
+
+    <!-- Onzichtbare verborgen container voor html2pdf antwoordenblad generatie -->
+    <div id="hiddenAnswerContainer" style="display: none; padding: 30px; font-family: sans-serif; background-color: white; color: black;"></div>
+
+    <!-- JAVASCRIPT LOGICA -->
+    <script>
+        // Applicatiestatus & Gegevensstructuur
+        const state = {
+            getalbereik: 20,
+            sommenPerOefening: 5,
+            selectedCategories: [],
+            xp: parseInt(localStorage.getItem('rk_points_v5')) || 0,
+            history: JSON.parse(localStorage.getItem('rk_history_v5')) || [],
+            progress: JSON.parse(localStorage.getItem('rk_progress_v5')) || {
+                splitsen: {totaal: 0, goed: 0},
+                optellen: {totaal: 0, goed: 0},
+                aftrekken: {totaal: 0, goed: 0},
+                optellen_aftrekken: {totaal: 0, goed: 0},
+                vermenigvuldigen: {totaal: 0, goed: 0},
+                delen: {totaal: 0, goed: 0},
+                redactie: {totaal: 0, goed: 0}
             }
-            container.appendChild(subWrapper);
-        });
-
-        switchView('werkblad');
-    }
-
-    let tijdelijkeScoreData = { goed: 0, totaal: 0, gecategoriseerd: {} };
-
-    function nakijkenWerkblad() {
-        let goedCount = 0;
-        let totaalCount = geformatteerdeWerkbladSommen.length;
-        let catStats = {};
-
-        geformatteerdeWerkbladSommen.forEach((som) => {
-            if(!catStats[som.category]) catStats[som.category] = { goed: 0, totaal: 0 };
-            catStats[som.category].totaal++;
-
-            let inputEl = document.getElementById(`input-${som.globalIndex}`);
-            let userAns = inputEl ? inputEl.value.trim().toLowerCase() : "";
-            let targetAns = som.antwoord.trim().toLowerCase();
-
-            let rowEl = document.getElementById(`somrow-${som.globalIndex}`);
-            let fbEl = document.getElementById(`fb-${som.globalIndex}`);
-
-            if(userAns === targetAns) {
-                goedCount++;
-                catStats[som.category].goed++;
-                if(rowEl) { rowEl.classList.remove('incorrect'); rowEl.classList.add('correct'); }
-                if(fbEl) fbEl.innerHTML = "✔️";
-            } else {
-                if(rowEl) { rowEl.classList.remove('correct'); rowEl.classList.add('incorrect'); }
-                if(fbEl) fbEl.innerHTML = `❌ (${som.antwoord})`;
-            }
-        });
-
-        tijdelijkeScoreData = {
-            goed: goedCount,
-            totaal: totaalCount,
-            gecategoriseerd: catStats
         };
 
-        document.getElementById('btnControleer').style.display = 'none';
-        document.getElementById('btnNaarScore').style.display = 'block';
-        alert(`Je hebt alles gecontroleerd! Score: ${goedCount} van de ${totaalCount} goed. Klik onderaan op 'Bekijk Mijn Score' om je punten op te halen.`);
-    }
+        const categorieNamen = {
+            splitsen: "🌿 Getallen Splitsen",
+            optellen: "➕ Optellen (Plus)",
+            aftrekken: "➖ Aftrekken (Min)",
+            optellen_aftrekken: "🔄 Plus en Min Gemengd",
+            vermenigvuldigen: "✖️ Vermenigvuldigen (Keersommen)",
+            delen: "➗ Delen (Deelsommen)",
+            redactie: "📖 Redactiesommen (Verhaaltjes)"
+        };
 
-    function gaNaarEvaluatieScherm() {
-        let verdiendeXp = tijdelijkeScoreData.goed * 10;
-        state.xp += verdiendeXp;
-        localStorage.setItem('rk_points_v5', state.xp);
-        document.getElementById('xpDisplay').innerText = state.xp;
+        let geformatteerdeWerkbladSommen = [];
 
-        for (const [cat, data] of Object.entries(tijdelijkeScoreData.gecategoriseerd)) {
-            if(state.progress[cat]) {
-                state.progress[cat].totaal += data.totaal;
-                state.progress[cat].goed += data.goed;
+        // Initialisatie bij het opstarten
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('xpDisplay').innerText = state.xp;
+            renderCategoryCards();
+            updateConfigUI();
+            updateHistoryUI();
+        });
+
+        function switchView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setBereik(b) {
+            state.getalbereik = b;
+            updateConfigUI();
+        }
+
+        function setSomAantal(a) {
+            state.sommenPerOefening = a;
+            updateConfigUI();
+        }
+
+        function updateConfigUI() {
+            document.querySelectorAll('.bereik-btn').forEach(b => b.className = b.className.replace(' bg-blue-500 text-white', ' bg-white text-black'));
+            document.querySelectorAll('.som-btn').forEach(b => b.className = b.className.replace(' bg-blue-500 text-white', ' bg-white text-black'));
+            
+            const activeBereik = document.getElementById(`btn-b-${state.getalbereik}`);
+            if(activeBereik) activeBereik.className += ' bg-blue-500 text-white';
+            
+            const activeSommen = document.getElementById(`btn-s-${state.sommenPerOefening}`);
+            if(activeSommen) activeSommen.className += ' bg-blue-500 text-white';
+        }
+
+        function renderCategoryCards() {
+            const grid = document.getElementById('categoriesGrid');
+            grid.innerHTML = '';
+            
+            Object.keys(categorieNamen).forEach(key => {
+                let card = document.createElement('div');
+                card.id = `card-${key}`;
+                card.className = "category-card p-4 bg-white border-2 border-gray-200 rounded-xl flex items-center justify-between shadow-sm hover:shadow-md";
+                card.onclick = () => toggleCategory(key);
+                card.innerHTML = `
+                    <span class="font-bold text-gray-700">${categorieNamen[key]}</span>
+                    <span class="indicator text-xl text-gray-300">⚪</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleCategory(key) {
+            const idx = state.selectedCategories.indexOf(key);
+            const card = document.getElementById(`card-${key}`);
+            const ind = card.querySelector('.indicator');
+
+            if (idx > -1) {
+                state.selectedCategories.splice(idx, 1);
+                card.classList.remove('selected');
+                ind.innerText = "⚪";
+            } else {
+                state.selectedCategories.push(key);
+                card.classList.add('selected');
+                ind.innerText = "🟢";
             }
         }
-        localStorage.setItem('rk_progress_v5', JSON.stringify(state.progress));
 
-        let nu = new Date();
-        let datumStr = `${nu.getDate()}-${nu.getMonth()+1} ${nu.getHours()}:${(nu.getMinutes()<10?'0':'')+nu.getMinutes()}`;
-        state.history.unshift({
-            aantalOnderdelen: Object.keys(tijdelijkeScoreData.gecategoriseerd).length,
-            score: `${tijdelijkeScoreData.goed}/${tijdelijkeScoreData.totaal}`,
-            datum: datumStr
-        });
-        localStorage.setItem('rk_history_v5', JSON.stringify(state.history));
-        updateHistoryUI();
+        function updateHistoryUI() {
+            const container = document.getElementById('historyContainer');
+            container.innerHTML = state.history.length === 0 ? "<p>Nog geen oefeningen gemaakt.</p>" : "";
+            
+            state.history.slice(0, 5).forEach(h => {
+                container.innerHTML += `
+                    <div class="flex justify-between p-2 bg-gray-50 border border-gray-100 rounded-md">
+                        <span>📅 ${h.datum} - ${h.aantalOnderdelen} onderdeel(en)</span>
+                        <span class="font-bold text-indigo-600">Score: ${h.score}</span>
+                    </div>
+                `;
+            });
 
-        document.getElementById('evalScore').innerText = `${tijdelijkeScoreData.goed} / ${tijdelijkeScoreData.totaal}`;
-        document.getElementById('evalPoints').innerText = `+${verdiendeXp} Punten toegevoegd! 🏆`;
-        
-        let perc = tijdelijkeScoreData.totaal > 0 ? (tijdelijkeScoreData.goed / tijdelijkeScoreData.totaal) * 100 : 0;
-        if(perc === 100) document.getElementById('evalFeedback').innerText = "Foutloos! Je bent een echte rekenmeester! 👑";
-        else if(perc >= 80) document.getElementById('evalFeedback').innerText = "Super gedaan! Grote klasse! 🥇";
-        else if(perc >= 55) document.getElementById('evalFeedback').innerText = "Ruim voldoende! Blijf zo doorgaan. 🥈";
-        else document.getElementById('evalFeedback').innerText = "Goed geprobeerd! Volgende keer gaat het vast nog beter. 🥉";
+            const statsBox = document.getElementById('accuracyStats');
+            statsBox.innerHTML = '';
+            Object.keys(state.progress).forEach(cat => {
+                let data = state.progress[cat];
+                let perc = data.totaal > 0 ? Math.round((data.goed / data.totaal) * 100) : 0;
+                statsBox.innerHTML += `
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>${categorieNamen[cat]}</span>
+                            <span class="font-semibold">${perc}% (${data.goed}/${data.totaal})</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: ${perc}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
-        switchView('evaluatie');
-    }
+        // Dynamische Reken-Algoritmes (Smarter Engine)
+        function genereerSom(type) {
+            let vraag = "", antwoord = "";
+            let isSplitsen = false;
+            let splitsData = null;
 
-    function downloadWerkbladPDF() {
-        const element = document.getElementById('worksheetContainer');
-        const opt = {
-            margin: 15,
-            filename: 'Mijn_Smarter_Oefenblad.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().set(opt).from(element).save();
-    }
-
-    function downloadAntwoordenPDF() {
-        const hiddenBox = document.getElementById('hiddenAnswerContainer');
-        hiddenBox.style.display = 'block';
-        hiddenBox.innerHTML = `<h2 style="margin-bottom:20px; border-bottom:2px solid #333; padding-bottom:10px;">🔑 Antwoordenblad</h2>`;
-
-        let currentCat = "";
-        geformatteerdeWerkbladSommen.forEach((som, idx) => {
-            if(som.category !== currentCat) {
-                currentCat = som.category;
-                hiddenBox.innerHTML += `<h3 style="margin:20px 0 10px 0; color:#4318ff;">${categorieNamen[currentCat]}</h3>`;
+            switch(type) {
+                case 'splitsen': {
+                    isSplitsen = true;
+                    let totaal = Math.floor(Math.random() * (state.getalbereik - 4)) + 4;
+                    let links = Math.floor(Math.random() * (totaal - 1)) + 1;
+                    let rechts = totaal - links;
+                    
+                    if(Math.random() > 0.5) {
+                        splitsData = { totaal, links, rechts: '?' };
+                        antwoord = rechts.toString();
+                    } else {
+                        splitsData = { totaal, links: '?', rechts };
+                        antwoord = links.toString();
+                    }
+                    break;
+                }
+                case 'optellen': {
+                    let max = state.getalbereik;
+                    let n1 = Math.floor(Math.random() * (max - 2)) + 1;
+                    let n2 = Math.floor(Math.random() * (max - n1 - 1)) + 1;
+                    vraag = `${n1} + ${n2} =`;
+                    antwoord = (n1 + n2).toString();
+                    break;
+                }
+                case 'aftrekken': {
+                    let max = state.getalbereik;
+                    let n1 = Math.floor(Math.random() * (max - 2)) + 2;
+                    let n2 = Math.floor(Math.random() * (n1 - 1)) + 1;
+                    vraag = `${n1} - ${n2} =`;
+                    antwoord = (n1 - n2).toString();
+                    break;
+                }
+                case 'optellen_aftrekken': {
+                    let max = state.getalbereik; 
+                    let n1 = Math.floor(Math.random() * (max * 0.6)) + 50; 
+                    let n2 = Math.floor(Math.random() * (max - n1 - 10)) + 10;
+                    if(Math.random() > 0.5) { 
+                        vraag = `${n1} + ${n2} =`; 
+                        antwoord = (n1 + n2).toString(); 
+                    } else { 
+                        vraag = `${n1 + n2} - ${n1} =`; 
+                        antwoord = n2.toString(); 
+                    } 
+                    break;
+                }
+                case 'vermenigvuldigen': {
+                    let g1 = Math.floor(Math.random() * 80) + 12; 
+                    let g2 = Math.floor(Math.random() * 8) + 3;
+                    vraag = `${g1} × ${g2} =`; 
+                    antwoord = (g1 * g2).toString(); 
+                    break;
+                }
+                case 'delen': {
+                    let g2 = Math.floor(Math.random() * 8) + 3; 
+                    let antw = Math.floor(Math.random() * 80) + 12;
+                    vraag = `${g2 * antw} : ${g2} =`; 
+                    antwoord = antw.toString(); 
+                    break;
+                }
+                case 'redactie': {
+                    let verhalen = [
+                        { v: "Bakker Jan heeft [X] koekjes. Hij verdeelt ze over [Y] zakjes. Hoeveel koekjes zitten er in elk zakje?", f: (x,y) => Math.floor(x/y) },
+                        { v: "Een bioscoopkaartje kost [Y] euro. Een groep van [X] kinderen koopt een kaartje. Hoeveel betalen zij in totaal?", f: (x,y) => x*y }
+                    ];
+                    let set = verhalen[Math.floor(Math.random() * verhalen.length)];
+                    let y = Math.floor(Math.random() * 6) + 4; 
+                    let x = y * (Math.floor(Math.random() * 10) + 5);
+                    vraag = set.v.replace("[X]", x).replace("[Y]", y); 
+                    antwoord = set.f(x, y).toString(); 
+                    break;
+                }
             }
-            let schoneVraag = som.vraag.replace(/\n/g, ' ');
-            hiddenBox.innerHTML += `<div style="padding:6px 0; border-bottom:1px dashed #eee; font-size:14px;">Som ${idx+1}: <strong>${schoneVraag}</strong> &rarr; Antwoord: <strong style="color:#05cd99;">${som.antwoord}</strong></div>`;
-        });
+            return { vraag, antwoord, isSplitsen, splitsData };
+        }
 
-        const opt = {
-            margin: 15,
-            filename: 'Smarter_Antwoordenblad.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+        function genereerWerkblad() {
+            if (state.selectedCategories.length === 0) {
+                alert("Kies eerst minstens één onderdeel om te oefenen!");
+                return;
+            }
 
-        html2pdf().set(opt).from(hiddenBox).save().then(() => {
-            hiddenBox.style.display = 'none';
-            hiddenBox.innerHTML = '';
-        });
-    }
-</script>
+            const container = document.getElementById('worksheetContainer');
+            container.innerHTML = '';
+            geformatteerdeWerkbladSommen = [];
+
+            state.selectedCategories.forEach(cat => {
+                let catHeader = document.createElement('div');
+                catHeader.className = 'category-header';
+                catHeader.innerText = categorieNamen[cat];
+                container.appendChild(catHeader);
+
+                let rowContainer = document.createElement('div');
+                rowContainer.className = 'worksheet-container';
+
+                for (let i = 0; i < state.sommenPerOefening; i++) {
+                    let somObj = genereerSom(cat);
+                    somObj.id = `som-${cat}-${i}`;
+                    somObj.category = cat;
+                    geformatteerdeWerkbladSommen.push(somObj);
+
+                    let somRow = document.createElement('div');
+                    somRow.className = 'som-row';
+                    somRow.id = `row-${somObj.id}`;
+
+                    if (somObj.isSplitsen) {
+                        somRow.innerHTML = `
+                            <div class="visual-splits-diagram">
+                                <div class="splits-top">${somObj.splitsData.totaal}</div>
+                                <div class="splits-branches">
+                                    <div class="splits-left">${somObj.splitsData.links === '?' ? `<input class="splits-input-box" id="input-${somObj.id}">` : somObj.splitsData.links}</div>
+                                    <div class="splits-rechts">${somObj.splitsData.rechts === '?' ? `<input class="splits-input-box" id="input-${somObj.id}">` : somObj.splitsData.rechts}</div>
+                                </div>
+                            </div>
+                            <span class="feedback-icon" id="feedback-${somObj.id}"></span>
+                        `;
+                    } else {
+                        somRow.innerHTML = `
+                            <div class="som-vraag">${somObj.vraag}</div>
+                            <div class="som-input-wrapper">
+                                <input type="text" class="som-input" id="input-${somObj.id}">
+                                <span class="feedback-icon" id="feedback-${somObj.id}"></span>
+                            </div>
+                        `;
+                    }
+                    rowContainer.appendChild(somRow);
+                }
+                container.appendChild(rowContainer);
+            });
+
+            // Reset knoppen naar beginstatus
+            document.getElementById('btnControleer').style.display = 'block';
+            document.getElementById('btnNaarScore').style.display = 'none';
+
+            switchView('werkblad');
+        }
+
+        function nakijkenWerkblad() {
+            let totaal = geformatteerdeWerkbladSommen.length;
+            let goed = 0;
+
+            geformatteerdeWerkbladSommen.forEach(som => {
+                let inputEl = document.getElementById(`input-${som.id}`);
+                let rowEl = document.getElementById(`row-${som.id}`);
+                let val = inputEl ? inputEl.value.trim() : "";
+
+                if (val === som.antwoord) {
+                    goed++;
+                    rowEl.classList.remove('incorrect');
+                    rowEl.classList.add('correct');
+                    document.getElementById(`feedback-${som.id}`).innerText = "✔️";
+                } else {
+                    rowEl.classList.remove('correct');
+                    rowEl.classList.add('incorrect');
+                    document.getElementById(`feedback-${som.id}`).innerText = "❌";
+                    if(inputEl) inputEl.value = `${val} (${som.antwoord})`;
+                }
+
+                // Update statistieken in state
+                state.progress[som.category].totaal++;
+                if (val === som.antwoord) state.progress[som.category].goed++;
+            });
+
+            // Punten berekenen (bijv. 10 XP per goede som)
+            let verdiendeXp = goed * 10;
+            state.xp += verdiendeXp;
+
+            // Historie opslaan
+            let datum = new Date().toLocaleDateString('nl-NL');
+            state.history.unshift({
+                aantalOnderdelen: state.selectedCategories.length,
+                score: `${goed} / ${totaal}`,
+                datum: datum
+            });
+
+            localStorage.setItem('rk_points_v5', state.xp);
+            localStorage.setItem('rk_history_v5', JSON.stringify(state.history));
+            localStorage.setItem('rk_progress_v5', JSON.stringify(state.progress));
+
+            document.getElementById('xpDisplay').innerText = state.xp;
+            updateHistoryUI();
+
+            // Evaluatiescherm vullen
+            document.getElementById('evalScore').innerText = `${goed} / ${totaal}`;
+            document.getElementById('evalPoints').innerText = `+${verdiendeXp} Punten toegevoegd!`;
+            document.getElementById('evalFeedback').innerText = goed / totaal >= 0.8 ? "Fantastisch gedaan! 🌟" : "Goed geprobeerd! Blijf oefenen. 💪";
+
+            document.getElementById('btnControleer').style.display = 'none';
+            document.getElementById('btnNaarScore').style.display = 'block';
+        }
+
+        function gaNaarEvaluatieScherm() {
+            switchView('evaluatie');
+        }
+
+        function downloadWerkbladPDF() {
+            const element = document.getElementById('pdfWorksheetWrapper');
+            const opt = {
+                margin: 10,
+                filename: 'Mijn_Smarter_Rekenblad.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function downloadAntwoordenPDF() {
+            const hiddenContainer = document.getElementById('hiddenAnswerContainer');
+            hiddenContainer.innerHTML = '<h2>Antwoordenblad 🔑</h2><br>';
+            
+            geformatteerdeWerkbladSommen.forEach((som, index) => {
+                let schoneVraag = som.isSplitsen ? `Splitsing van ${som.splitsData.totaal}` : som.vraag.replace('\n', ' ');
+                hiddenContainer.innerHTML += `<p>Som ${index + 1}: ${schoneVraag} <strong>→ Antwoord: ${som.antwoord}</strong></p>`;
+            });
+
+            hiddenContainer.style.display = 'block';
+            const opt = {
+                margin: 10,
+                filename: 'Antwoorden_Smarter_Rekenblad.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(hiddenContainer).save().then(() => {
+                hiddenContainer.style.display = 'none';
+            });
+        }
+    </script>
 </body>
 </html>

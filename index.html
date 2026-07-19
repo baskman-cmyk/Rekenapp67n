@@ -1168,7 +1168,7 @@ function nakijkenWerkblad() {
     });
 
     // Punten
-    const verdiendePunten = goedTelling * 10;
+    const verdiendePunten = goedTelling * 1;
     state.xp += verdiendePunten;
     Storage.set(CONFIG.storageKeys.points, state.xp);
     document.getElementById('xpDisplay').textContent = String(state.xp);

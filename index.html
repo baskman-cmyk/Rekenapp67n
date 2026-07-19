@@ -198,37 +198,37 @@
             </div>
         </header>
 
-        <!-- VIEW 1: DASHBOARD (ORIGINELE BEGINPAGINA LAYOUT HERSTELD) -->
+        <!-- VIEW 1: DASHBOARD (ORIGINELE BADGE-KNOPPEN MET HOGE PRIORITEIT HERSTELD) -->
         <main id="view-dashboard" class="view active p-6 md:p-8 space-y-8">
             
-            <!-- Configuratie Blokken -->
-            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Links: Selectie Getalbereik -->
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">🔢 Kies het maximale getalbereik:</label>
-                    <select id="selectBereik" onchange="updateBereik(this.value)" class="w-full p-3 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
-                        <option value="10">Tot 10 (Groep 3)</option>
-                        <option value="20" selected>Tot 20 (Groep 3/4)</option>
-                        <option value="100">Tot 100 (Groep 4/5)</option>
-                        <option value="1000">Tot 1000 (Groep 5/6)</option>
-                    </select>
+            <!-- Knop-gebaseerde Configuratie Opties -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Getalbereik instellen -->
+                <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">🔢 1. Kies het maximale getalbereik</h3>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setBereik(10)" id="btn-b-10" class="bereik-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">10</button>
+                        <button onclick="setBereik(20)" id="btn-b-20" class="bereik-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">20</button>
+                        <button onclick="setBereik(100)" id="btn-b-100" class="bereik-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">100</button>
+                        <button onclick="setBereik(1000)" id="btn-b-1000" class="bereik-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">1000</button>
+                    </div>
                 </div>
 
-                <!-- Rechts: Selectie Aantal Sommen -->
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">📝 Aantal sommen per oefening:</label>
-                    <select id="selectAantal" onchange="updateAantal(this.value)" class="w-full p-3 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
-                        <option value="5" selected>5 sommen</option>
-                        <option value="10">10 sommen</option>
-                        <option value="15">15 sommen</option>
-                        <option value="20">20 sommen</option>
-                    </select>
+                <!-- Sommen per onderdeel -->
+                <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">📝 2. Aantal sommen per onderdeel</h3>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setSomAantal(5)" id="btn-s-5" class="som-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">5</button>
+                        <button onclick="setSomAantal(10)" id="btn-s-10" class="som-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">10</button>
+                        <button onclick="setSomAantal(15)" id="btn-s-15" class="som-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">15</button>
+                        <button onclick="setSomAantal(20)" id="btn-s-20" class="som-btn py-2 bg-white border border-gray-300 rounded-lg font-bold hover:bg-gray-100 transition">20</button>
+                    </div>
                 </div>
-            </div>
+            </section>
 
             <!-- Onderdelen Selectie -->
             <section>
-                <h3 class="text-xl font-bold text-gray-800 mb-4">🎯 Selecteer de gewenste categorieën:</h3>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">🎯 3. Selecteer de gewenste categorieën</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="categoriesGrid">
                     <!-- Dynamic cards geïnjecteerd via JS -->
                 </div>
@@ -370,6 +370,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('xpDisplay').innerText = state.xp;
             renderCategoryCards();
+            updateConfigUI();
             updateHistoryUI();
         });
 
@@ -379,12 +380,37 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function updateBereik(val) {
-            state.getalbereik = parseInt(val);
+        function setBereik(b) {
+            state.getalbereik = b;
+            updateConfigUI();
         }
 
-        function updateAantal(val) {
-            state.sommenPerOefening = parseInt(val);
+        function setSomAantal(a) {
+            state.sommenPerOefening = a;
+            updateConfigUI();
+        }
+
+        function updateConfigUI() {
+            document.querySelectorAll('.bereik-btn').forEach(b => {
+                b.className = b.className.replace(' bg-blue-500 text-white border-blue-500', '');
+                if (!b.className.includes('bg-white')) b.className += ' bg-white';
+            });
+            document.querySelectorAll('.som-btn').forEach(b => {
+                b.className = b.className.replace(' bg-blue-500 text-white border-blue-500', '');
+                if (!b.className.includes('bg-white')) b.className += ' bg-white';
+            });
+            
+            const activeBereik = document.getElementById(`btn-b-${state.getalbereik}`);
+            if(activeBereik) {
+                activeBereik.className = activeBereik.className.replace('bg-white', '');
+                activeBereik.className += ' bg-blue-500 text-white border-blue-500';
+            }
+            
+            const activeSommen = document.getElementById(`btn-s-${state.sommenPerOefening}`);
+            if(activeSommen) {
+                activeSommen.className = activeSommen.className.replace('bg-white', '');
+                activeSommen.className += ' bg-blue-500 text-white border-blue-500';
+            }
         }
 
         function renderCategoryCards() {
@@ -647,26 +673,38 @@
             switchView('evaluatie');
         }
 
-        // PDF Exporters met fix voor html2pdf rendering issues
+        // PDF Exporters met fix voor html2pdf rendering issues (vrijgemaakt van Tailwind CSS-clashes)
         function downloadWerkbladPDF() {
             const element = document.getElementById('pdfWorksheetWrapper');
+            
+            // Maak tijdelijke kloon aan specifiek geoptimaliseerd voor html2pdf om bevriezen te voorkomen
+            const kloon = element.cloneNode(true);
+            
+            // Verwijder eventuele inputvelden/interactieve knoppen in de kloon voor een zuiver werkblad
+            kloon.querySelectorAll('input').forEach(i => {
+                i.style.border = 'none';
+                i.style.borderBottom = '1px solid #000';
+                i.value = ''; 
+            });
+
             const opt = {
-                margin: 10,
+                margin: 15,
                 filename: 'Mijn_Smarter_Rekenblad.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
+                html2canvas: { scale: 2, logging: false, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+            
+            html2pdf().set(opt).from(kloon).save();
         }
 
         function downloadAntwoordenPDF() {
             const hiddenContainer = document.getElementById('hiddenAnswerContainer');
-            hiddenContainer.innerHTML = '<h2 style="font-family: Fredoka, sans-serif; font-size: 24px;">Antwoordenblad 🔑</h2><br>';
+            hiddenContainer.innerHTML = '<h2 style="font-family: Fredoka, sans-serif; font-size: 24px; color: #1e3a8a;">Antwoordenblad 🔑</h2><br>';
             
             geformatteerdeWerkbladSommen.forEach((som, index) => {
                 let schoneVraag = som.isSplitsen ? `Splitsing van ${som.splitsData.totaal} (Links: ${som.splitsData.links}, Rechts: ${som.splitsData.rechts})` : som.vraag;
-                hiddenContainer.innerHTML += `<p style="font-size: 16px; margin: 8px 0;">Som ${index + 1}: ${schoneVraag} <strong>→ Antwoord: ${som.antwoord}</strong></p>`;
+                hiddenContainer.innerHTML += `<p style="font-size: 16px; font-family: sans-serif; margin: 10px 0; padding-bottom: 6px; border-bottom: 1px dashed #e5e7eb;">Som ${index + 1}: ${schoneVraag} <strong style="color: #10b981;">→ Antwoord: ${som.antwoord}</strong></p>`;
             });
 
             hiddenContainer.style.display = 'block';
@@ -677,6 +715,7 @@
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
+            
             html2pdf().set(opt).from(hiddenContainer).save().then(() => {
                 hiddenContainer.style.display = 'none';
             });

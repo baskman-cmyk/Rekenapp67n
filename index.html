@@ -298,6 +298,8 @@
             text-align: center;
             font-weight: bold;
             background: #fff;
+            outline: none;
+            color: var(--text-main);
         }
 
         .som-vraag { font-size: 16px; font-weight: 700; line-height: 1.4; white-space: pre-line; flex: 1; }
@@ -709,7 +711,7 @@
             case 'breukencontext': {
                 let poolBC = [
                     { v: "Van een hardlooproute van [X] km heeft Tess 1/[Y] deel afgelegd. Hoeveel km heeft ze gerend?", f: (x, y) => x / y },
-                    { v: "In een klas zitten [X] kinderen. 2/[Y] deel zit op voetbal. Hoeveel kinderen zijn dat?", f: (x, y) => (x / y) * 2 },
+                    { v: "In een klas zitten [X] children. 2/[Y] deel zit op voetbal. Hoeveel kinderen zijn dat?", f: (x, y) => (x / y) * 2 },
                     { v: "Een tank heeft een inhoud van [X] liter. De tank is voor 3/[Y] gevuld. Hoeveel liter zit erin?", f: (x, y) => (x / y) * 3 }
                 ];
                 let gekozenBc = poolBC[Math.floor(Math.random() * poolBC.length)];
@@ -722,218 +724,214 @@
                 else { vraag = `${n1 + n2} - ${n1} =`; antwoord = n2.toString(); } break;
             }
             case 'vermenigvuldigen': {
-                let k1 = Math.floor(Math.random() * 12) + 3; let k2 = Math.floor(Math.random() * 40) + 11;
+                let k1 = Math.floor(Math.random() * 30) + 11;
+                let k2 = Math.floor(Math.random() * 7) + 3;
                 vraag = `${k1} × ${k2} =`; antwoord = (k1 * k2).toString(); break;
             }
             case 'delen': {
-                let d2 = Math.floor(Math.random() * 12) + 3; let res = Math.floor(Math.random() * 12) + 4;
-                vraag = `${d2 * res} : ${d2} =`; antwoord = res.toString(); break;
+                let d2 = Math.floor(Math.random() * 7) + 3;
+                let uitkomst = Math.floor(Math.random() * 15) + 4;
+                let d1 = d2 * uitkomst;
+                vraag = `${d1} : ${d2} =`; antwoord = uitkomst.toString(); break;
             }
             case 'redactie': {
-                let poolRedactie = [
-                    { v: "Een bakker maakt [X] croissantjes. Aan het einde van de dag heeft hij er nog [Y] over. Hoeveel zijn er verkocht?", f: (x, y) => x - y },
-                    { v: "Er staan [X] rijen met stoelen in de aula. In elke rij staan precies [Y] stoelen. Hoeveel stoelen in totaal?", f: (x, y) => x * y }
+                let poolR = [
+                    { v: "Fleur heeft [X] euro. Ze koopt een boek van [Y] euro. Hoeveel geld houdt ze over?", f: (x, y) => x - y },
+                    { v: "Er gaan [X] appels in één kist. Hoeveel appels gaan er in [Y] kisten?", f: (x, y) => x * y },
+                    { v: "Een school heeft [X] leerlingen verdeeld over [Y] gelijke klassen. Hoeveel leerlingen zitten er per klas?", f: (x, y) => x / y }
                 ];
-                let gekozenRed = poolRedactie[Math.floor(Math.random() * poolRedactie.length)];
-                let x = Math.floor(Math.random() * 200) + 100; let y = Math.floor(Math.random() * 80) + 10;
-                vraag = gekozenRed.v.replace("[X]", x).replace("[Y]", y); antwoord = gekozenRed.f(x, y).toString(); break;
+                let gekozenR = poolR[Math.floor(Math.random() * poolR.length)];
+                let y = Math.floor(Math.random() * 5) + 4;
+                let x = gekozenR.v.includes("verdeeld") ? y * (Math.floor(Math.random() * 10) + 15) : Math.floor(Math.random() * 100) + 50;
+                vraag = gekozenR.v.replace("[X]", x).replace("[Y]", y); antwoord = gekozenR.f(x, y).toString(); break;
             }
         }
         return { vraag, antwoord, isSplitsen, splitsData };
     }
 
     function genereerWerkblad() {
-        if (state.selectedCategories.length === 0) { alert("Kies eerst minimaal één onderdeel!"); return; }
+        if(state.selectedCategories.length === 0) {
+            alert("Kies tenminste één onderdeel uit het dashboard om te oefenen!");
+            return;
+        }
 
-        const container = document.getElementById('worksheetContainer');
-        const antwoordenContainer = document.getElementById('hiddenAnswerContainer');
-        
-        container.innerHTML = '';
-        antwoordenContainer.innerHTML = `<h2 style="font-size:24px; margin-bottom:10px; color:#4318ff;">🔑 Antwoordenblad</h2><p style="margin-bottom:20px; color:#777;">Gegenereerd op: ${new Date().toLocaleDateString('nl-NL')}</p>`;
-        
         geformatteerdeWerkbladSommen = [];
-        let globaleIndex = 0;
-
-        state.selectedCategories.forEach(cat => {
-            // Werkblad Header
-            let header = document.createElement('div');
-            header.className = 'category-header';
-            header.innerText = categorieNamen[cat];
-            container.appendChild(header);
-
-            // Antwoordenblad Categorie Header
-            let ansHeader = document.createElement('div');
-            ansHeader.className = 'category-header';
-            ansHeader.innerText = `Antwoorden: ${categorieNamen[cat]}`;
-            antwoordenContainer.appendChild(ansHeader);
-
-            let subContainer = document.createElement('div');
-            subContainer.className = 'worksheet-container';
-
-            let ansSubContainer = document.createElement('div');
-            ansSubContainer.className = 'worksheet-container';
-
-            for(let i = 0; i < state.sommenPerOefening; i++) {
-                let somObj = genereerSom(cat);
-                somObj.categorie = cat;
-                somObj.index = globaleIndex;
-                geformatteerdeWerkbladSommen.push(somObj);
-
-                // Bouw rij voor het Oefenblad
-                let row = document.createElement('div');
-                row.className = 'som-row';
-                row.id = `som-row-${globaleIndex}`;
-
-                // Bouw rij voor het Antwoordenblad
-                let ansRow = document.createElement('div');
-                ansRow.className = 'som-row';
-
-                if (somObj.isSplitsen) {
-                    let linksHTML = somObj.splitsData.links === '?' ? `<input type="text" class="splits-input-box" id="input-${globaleIndex}-links">` : somObj.splitsData.links;
-                    let rechtsHTML = somObj.splitsData.rechts === '?' ? `<input type="text" class="splits-input-box" id="input-${globaleIndex}-rechts">` : somObj.splitsData.rechts;
-
-                    row.innerHTML = `
-                        <div class="som-vraag">Vul het missende getal in het splitsingsschema in:</div>
-                        <div class="visual-splits-diagram">
-                            <div class="splits-top">${somObj.splitsData.totaal}</div>
-                            <div class="splits-branches">
-                                <div class="splits-left">${linksHTML}</div>
-                                <div class="splits-rechts">${rechtsHTML}</div>
-                            </div>
-                        </div>
-                        <div class="feedback-icon" id="fb-${globaleIndex}"></div>
-                    `;
-
-                    // Antwoorden invulling voor splitsen
-                    let aLinks = somObj.splitsData.links === '?' ? `<strong>${somObj.antwoord}</strong>` : somObj.splitsData.links;
-                    let aRechts = somObj.splitsData.rechts === '?' ? `<strong>${somObj.antwoord}</strong>` : somObj.splitsData.rechts;
-                    ansRow.innerHTML = `
-                        <div class="som-vraag">Splitsing Oplossing:</div>
-                        <div class="visual-splits-diagram">
-                            <div class="splits-top">${somObj.splitsData.totaal}</div>
-                            <div class="splits-branches">
-                                <div class="splits-left">${aLinks}</div>
-                                <div class="splits-rechts">${aRechts}</div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    row.innerHTML = `
-                        <div class="som-vraag">${somObj.vraag}</div>
-                        <div class="som-input-wrapper"><input type="text" class="som-input" id="input-${globaleIndex}" placeholder="?"><span class="feedback-icon" id="fb-${globaleIndex}"></span></div>
-                    `;
-                    
-                    ansRow.innerHTML = `
-                        <div class="som-vraag">${somObj.vraag}</div>
-                        <div class="som-input-wrapper"><div class="som-input" style="display:flex; align-items:center; justify-content:center; border:2px solid var(--success) !important; color:var(--success); background:#e6fcf5;">${somObj.antwoord}</div></div>
-                    `;
-                }
-
-                subContainer.appendChild(row);
-                ansSubContainer.appendChild(ansRow);
-                globaleIndex++;
-            }
-            container.appendChild(subContainer);
-            antwoordenContainer.appendChild(ansSubContainer);
-        });
+        const container = document.getElementById('worksheetContainer');
+        container.innerHTML = '';
 
         document.getElementById('btnControleer').style.display = 'block';
         document.getElementById('btnNaarScore').style.display = 'none';
-        switchView('view-werkblad');
-    }
 
-    function downloadWerkbladPDF() {
-        const element = document.getElementById('pdfWorksheetWrapper');
-        element.classList.add('pdf-export-mode');
-        
-        const opt = {
-            margin:       10,
-            filename:     `rekenen_oefenblad_${new Date().toLocaleDateString('nl-NL')}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+        state.selectedCategories.forEach(cat => {
+            let catHeader = document.createElement('div');
+            catHeader.className = 'category-header';
+            catHeader.innerText = categorieNamen[cat];
+            container.appendChild(catHeader);
 
-        html2pdf().set(opt).from(element).save().then(() => {
-            element.classList.remove('pdf-export-mode');
+            let subWrapper = document.createElement('div');
+            subWrapper.className = 'worksheet-container';
+
+            for(let i = 0; i < state.sommenPerOefening; i++) {
+                let sObj = genereerSom(cat);
+                let somIndex = geformatteerdeWerkbladSommen.length;
+                
+                sObj.category = cat;
+                sObj.globalIndex = somIndex;
+                geformatteerdeWerkbladSommen.push(sObj);
+
+                let sRow = document.createElement('div');
+                sRow.className = 'som-row';
+                sRow.id = `somrow-${somIndex}`;
+
+                if(sObj.isSplitsen) {
+                    let sData = sObj.splitsData;
+                    let lContent = sData.links === '?' ? `<input type="text" class="splits-input-box" id="input-${somIndex}">` : sData.links;
+                    let rContent = sData.rechts === '?' ? `<input type="text" class="splits-input-box" id="input-${somIndex}">` : sData.rechts;
+                    
+                    sRow.innerHTML = `
+                        <div class="som-vraag">Vul het missende getal in het splitschema in:</div>
+                        <div class="visual-splits-diagram">
+                            <div class="splits-top">${sData.totaal}</div>
+                            <div class="splits-branches">
+                                <div class="splits-left">${lContent}</div>
+                                <div class="splits-rechts">${rContent}</div>
+                            </div>
+                        </div>
+                        <span class="feedback-icon" id="fb-${somIndex}"></span>
+                    `;
+                } else {
+                    sRow.innerHTML = `
+                        <div class="som-vraag">${sObj.vraag}</div>
+                        <div class="som-input-wrapper">
+                            <input type="text" class="som-input" id="input-${somIndex}" autocomplete="off">
+                        </div>
+                        <span class="feedback-icon" id="fb-${somIndex}"></span>
+                    `;
+                }
+                subWrapper.appendChild(sRow);
+            }
+            container.appendChild(subWrapper);
         });
+
+        switchView('werkblad');
     }
 
-    function downloadAntwoordenPDF() {
-        const element = document.getElementById('hiddenAnswerContainer');
-        element.style.display = 'block';
-        element.classList.add('pdf-export-mode');
-        
-        const opt = {
-            margin:       10,
-            filename:     `rekenen_antwoordenblad_${new Date().toLocaleDateString('nl-NL')}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(element).save().then(() => {
-            element.style.display = 'none';
-            element.classList.remove('pdf-export-mode');
-        });
-    }
+    let tijdelijkeScoreData = { goed: 0, totaal: 0, gecategoriseerd: {} };
 
     function nakijkenWerkblad() {
-        let totaalGemaakt = geformatteerdeWerkbladSommen.length, goedTelling = 0, updatesPerCategorie = {};
-        state.selectedCategories.forEach(c => updatesPerCategorie[c] = { goed: 0, totaal: 0 });
+        let goedCount = 0;
+        let totaalCount = geformatteerdeWerkbladSommen.length;
+        let catStats = {};
 
-        geformatteerdeWerkbladSommen.forEach(som => {
-            let userAns = "";
-            if (som.isSplitsen) {
-                let inputId = som.splitsData.links === '?' ? `input-${som.index}-links` : `input-${som.index}-rechts`;
-                let inputEl = document.getElementById(inputId);
-                userAns = inputEl ? inputEl.value.trim().replace(',', '.') : "";
-            } else {
-                let inputEl = document.getElementById(`input-${som.index}`);
-                userAns = inputEl ? inputEl.value.trim().replace(',', '.') : "";
-            }
-            
-            let rowEl = document.getElementById(`som-row-${som.index}`);
-            let fbEl = document.getElementById(`fb-${som.index}`);
-            let targetAns = som.antwoord.trim().replace(',', '.');
+        geformatteerdeWerkbladSommen.forEach((som) => {
+            if(!catStats[som.category]) catStats[som.category] = { goed: 0, totaal: 0 };
+            catStats[som.category].totaal++;
 
-            updatesPerCategorie[som.categorie].totaal++;
-            if (userAns === targetAns) {
-                rowEl.className = "som-row correct"; fbEl.innerHTML = "✔️"; goedTelling++; updatesPerCategorie[som.categorie].goed++;
+            let inputEl = document.getElementById(`input-${som.globalIndex}`);
+            let userAns = inputEl ? inputEl.value.trim().toLowerCase() : "";
+            let targetAns = som.antwoord.trim().toLowerCase();
+
+            let rowEl = document.getElementById(`somrow-${som.globalIndex}`);
+            let fbEl = document.getElementById(`fb-${som.globalIndex}`);
+
+            if(userAns === targetAns) {
+                goedCount++;
+                catStats[som.category].goed++;
+                if(rowEl) { rowEl.classList.remove('incorrect'); rowEl.classList.add('correct'); }
+                if(fbEl) fbEl.innerHTML = "✔️";
             } else {
-                rowEl.className = "som-row incorrect"; fbEl.innerHTML = `❌ <span style="font-size:11px; font-weight:normal; color:var(--danger);">(${som.antwoord})</span>`;
+                if(rowEl) { rowEl.classList.remove('correct'); rowEl.classList.add('incorrect'); }
+                if(fbEl) fbEl.innerHTML = `❌ (${som.antwoord})`;
             }
         });
 
-        let verdiendePunten = goedTelling * 10; state.xp += verdiendePunten;
-        localStorage.setItem('rk_points_v5', state.xp); document.getElementById('xpDisplay').innerText = state.xp;
+        tijdelijkeScoreData = {
+            goed: goedCount,
+            totaal: totaalCount,
+            gecategoriseerd: catStats
+        };
 
-        for (const [cat, data] of Object.entries(updatesPerCategorie)) {
-            state.progress[cat].totaal += data.totaal; state.progress[cat].goed += data.goed;
+        document.getElementById('btnControleer').style.display = 'none';
+        document.getElementById('btnNaarScore').style.display = 'block';
+        alert(`Je hebt alles gecontroleerd! Score: ${goedCount} van de ${totaalCount} goed. Klik onderaan op 'Bekijk Mijn Score' om je punten op te halen.`);
+    }
+
+    function gaNaarEvaluatieScherm() {
+        let verdiendeXp = tijdelijkeScoreData.goed * 10;
+        state.xp += verdiendeXp;
+        localStorage.setItem('rk_points_v5', state.xp);
+        document.getElementById('xpDisplay').innerText = state.xp;
+
+        for (const [cat, data] of Object.entries(tijdelijkeScoreData.gecategoriseerd)) {
+            if(state.progress[cat]) {
+                state.progress[cat].totaal += data.totaal;
+                state.progress[cat].goed += data.goed;
+            }
         }
         localStorage.setItem('rk_progress_v5', JSON.stringify(state.progress));
 
         let nu = new Date();
-        state.history.unshift({ aantalOnderdelen: state.selectedCategories.length, score: `${goedTelling} / ${totaalGemaakt}`, datum: `${nu.getDate()}-${nu.getMonth()+1} ${nu.getHours()}:${(nu.getMinutes()<10?'0':'')+nu.getMinutes()}` });
+        let datumStr = `${nu.getDate()}-${nu.getMonth()+1} ${nu.getHours()}:${(nu.getMinutes()<10?'0':'')+nu.getMinutes()}`;
+        state.history.unshift({
+            aantalOnderdelen: Object.keys(tijdelijkeScoreData.gecategoriseerd).length,
+            score: `${tijdelijkeScoreData.goed}/${tijdelijkeScoreData.totaal}`,
+            datum: datumStr
+        });
         localStorage.setItem('rk_history_v5', JSON.stringify(state.history));
-
-        document.getElementById('evalScore').innerText = `${goedTelling} / ${totaalGemaakt}`;
-        document.getElementById('evalPoints').innerText = `+${verdiendePunten} Punten toegevoegd!`;
-        
-        let perc = (goedTelling / totaalGemaakt) * 100;
-        if (perc === 100) document.getElementById('evalFeedback').innerText = "Perfect! Je bent een meester! 👑";
-        else if (perc >= 80) document.getElementById('evalFeedback').innerText = "Super goed gewerkt! 🥇";
-        else if (perc >= 60) document.getElementById('evalFeedback').innerText = "Mooi resultaat! 🥈";
-        else document.getElementById('evalFeedback').innerText = "Goed geprobeerd, blijf oefenen! 🥉";
-
-        document.getElementById('btnControleer').style.display = 'none';
-        document.getElementById('btnNaarScore').style.display = 'block';
         updateHistoryUI();
-        window.scrollTo(0, document.body.scrollHeight);
+
+        document.getElementById('evalScore').innerText = `${tijdelijkeScoreData.goed} / ${tijdelijkeScoreData.totaal}`;
+        document.getElementById('evalPoints').innerText = `+${verdiendeXp} Punten toegevoegd! 🏆`;
+        
+        let perc = tijdelijkeScoreData.totaal > 0 ? (tijdelijkeScoreData.goed / tijdelijkeScoreData.totaal) * 100 : 0;
+        if(perc === 100) document.getElementById('evalFeedback').innerText = "Foutloos! Je bent een echte rekenmeester! 👑";
+        else if(perc >= 80) document.getElementById('evalFeedback').innerText = "Super gedaan! Grote klasse! 🥇";
+        else if(perc >= 55) document.getElementById('evalFeedback').innerText = "Ruim voldoende! Blijf zo doorgaan. 🥈";
+        else document.getElementById('evalFeedback').innerText = "Goed geprobeerd! Volgende keer gaat het vast nog beter. 🥉";
+
+        switchView('evaluatie');
     }
 
-    function gaNaarEvaluatieScherm() { switchView('view-evaluatie'); }
-</script>
+    function downloadWerkbladPDF() {
+        const element = document.getElementById('worksheetContainer');
+        const opt = {
+            margin: 15,
+            filename: 'Mijn_Smarter_Oefenblad.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
+    }
 
+    function downloadAntwoordenPDF() {
+        const hiddenBox = document.getElementById('hiddenAnswerContainer');
+        hiddenBox.style.display = 'block';
+        hiddenBox.innerHTML = `<h2 style="margin-bottom:20px; border-bottom:2px solid #333; padding-bottom:10px;">🔑 Antwoordenblad</h2>`;
+
+        let currentCat = "";
+        geformatteerdeWerkbladSommen.forEach((som, idx) => {
+            if(som.category !== currentCat) {
+                currentCat = som.category;
+                hiddenBox.innerHTML += `<h3 style="margin:20px 0 10px 0; color:#4318ff;">${categorieNamen[currentCat]}</h3>`;
+            }
+            let schoneVraag = som.vraag.replace(/\n/g, ' ');
+            hiddenBox.innerHTML += `<div style="padding:6px 0; border-bottom:1px dashed #eee; font-size:14px;">Som ${idx+1}: <strong>${schoneVraag}</strong> &rarr; Antwoord: <strong style="color:#05cd99;">${som.antwoord}</strong></div>`;
+        });
+
+        const opt = {
+            margin: 15,
+            filename: 'Smarter_Antwoordenblad.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(hiddenBox).save().then(() => {
+            hiddenBox.style.display = 'none';
+            hiddenBox.innerHTML = '';
+        });
+    }
+</script>
 </body>
 </html>

@@ -173,6 +173,15 @@
         .config-block h4 { margin-bottom: 12px; font-size: 14px; font-weight: 700; color: var(--text-main); }
         .config-block legend { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 12px; padding: 0; }
         .config-block fieldset { border: none; padding: 0; margin: 0; }
+        .custom-lengte-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .custom-lengte-row label { font-size: 13px; font-weight: 600; color: var(--text-main); }
+        .custom-lengte-row input[type="number"] {
+            width: 100px; height: 40px; border-radius: 8px; border: 2px solid var(--border);
+            background: var(--bg-main); color: var(--text-main); font-size: 14px; text-align: center;
+            font-weight: 700; outline: none; font: inherit;
+        }
+        .custom-lengte-row input[type="number"]:focus { border-color: var(--primary); background: #fff; }
+        .custom-lengte-row .btn-sub { flex: 0 0 auto; padding: 10px 14px; }
 
         /* Knoppen Groepen */
         .btn-group { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
@@ -377,7 +386,14 @@
                     <button class="btn-sub active" type="button" data-action="set-lengte" data-lengte="10">10 sommen</button>
                     <button class="btn-sub" type="button" data-action="set-lengte" data-lengte="15">15 sommen</button>
                     <button class="btn-sub" type="button" data-action="set-lengte" data-lengte="20">20 sommen</button>
+                    <button class="btn-sub" type="button" data-action="set-lengte" data-lengte="50">50 sommen</button>
                 </div>
+                <div class="custom-lengte-row">
+                    <label for="customLengteInput">Ander aantal (max. 5000):</label>
+                    <input type="number" id="customLengteInput" min="1" max="5000" step="1" placeholder="bijv. 1500" inputmode="numeric" autocorrect="off" autocapitalize="none" autocomplete="off" spellcheck="false">
+                    <button class="btn-sub" type="button" data-action="set-lengte-custom">Gebruiken</button>
+                </div>
+                <p class="sub-text" id="lengteWaarschuwing" style="display:none;">Let op: bij grote aantallen (500+) kan het even duren voordat het werkblad is opgebouwd.</p>
             </fieldset>
         </div>
 
@@ -496,6 +512,13 @@ function pickRandom(arr) {
     return arr[randInt(0, arr.length - 1)];
 }
 
+function gcd(a, b) {
+    while (b !== 0) {
+        [a, b] = [b, a % b];
+    }
+    return a;
+}
+
 function maakSom(vraag, antwoordNum) {
     const antwoord = String(antwoordNum);
     return {
@@ -570,26 +593,8 @@ function genSplitsen() {
     return maakSplitsSom(totaal, '?', rDeel, lDeel);
 }
 
-const POOL_BREUKEN_HELFT_VAN = [12, 16, 20, 24, 32];
-const POOL_BREUKEN_TELLER = [6, 8, 10, 12];
-const POOL_BREUKEN_VEREENVOUDIG = [
-    { v: '8/12 = ... / 3', a: '2' },
-    { v: '6/9 = ... / 3', a: '2' },
-    { v: '10/15 = ... / 3', a: '2' },
-    { v: '4/6 = ... / 3', a: '2' },
-    { v: '9/12 = ... / 4', a: '3' },
-    { v: '12/16 = ... / 4', a: '3' },
-    { v: '10/12 = ... / 6', a: '5' }
-];
-const POOL_BREUKEN_HELEN = [
-    { teller: 7, noemer: 4 },
-    { teller: 9, noemer: 2 },
-    { teller: 11, noemer: 3 },
-    { teller: 13, noemer: 5 },
-    { teller: 15, noemer: 4 },
-    { teller: 8, noemer: 3 },
-    { teller: 17, noemer: 6 }
-];
+const POOL_BREUKEN_HELFT_VAN = [12, 16, 20, 24, 32, 36, 40, 44, 48];
+const POOL_BREUKEN_TELLER = [6, 8, 10, 12, 14, 16, 18, 20];
 
 function genBreuken() {
     const subB = randInt(0, 3);
@@ -602,47 +607,63 @@ function genBreuken() {
         return maakSom(`Vul de ontbrekende teller in:\n1/2 = .../${nrs}`, nrs / 2);
     }
     if (subB === 2) {
-        const item = pickRandom(POOL_BREUKEN_VEREENVOUDIG);
-        return maakSom(`Vereenvoudig de breuk zo ver mogelijk:\n${item.v}`, item.a);
+        // Procedureel gegenereerd (in plaats van een vaste lijst), zodat er
+        // duizenden verschillende vereenvoudig-opgaven mogelijk zijn.
+        // Belangrijk: teller/noemer moet écht al volledig vereenvoudigd zijn
+        // (gcd = 1), anders klopt "zo ver mogelijk" niet met de gevraagde noemer.
+        let noemerVereenvoudigd, tellerVereenvoudigd;
+        do {
+            noemerVereenvoudigd = randInt(2, 9);
+            tellerVereenvoudigd = randInt(1, noemerVereenvoudigd - 1);
+        } while (gcd(tellerVereenvoudigd, noemerVereenvoudigd) !== 1);
+        const factor = randInt(2, 9);
+        const teller = tellerVereenvoudigd * factor;
+        const noemer = noemerVereenvoudigd * factor;
+        return maakSom(`Vereenvoudig de breuk zo ver mogelijk:\n${teller}/${noemer} = ... / ${noemerVereenvoudigd}`, tellerVereenvoudigd);
     }
-    const item = pickRandom(POOL_BREUKEN_HELEN);
-    const helen = Math.floor(item.teller / item.noemer);
-    const rest = item.teller - helen * item.noemer;
-    const antwoord = `${helen} ${rest}/${item.noemer}`;
-    return maakSom(`Haal de helen eruit:\n${item.teller}/${item.noemer} = ... (Geef op als bijv: 1 3/4)`, antwoord);
+    // "Haal de helen eruit": ook procedureel, ruime variatie.
+    const noemer = randInt(2, 9);
+    const helen = randInt(1, 5);
+    const rest = randInt(1, noemer - 1);
+    const teller = helen * noemer + rest;
+    const antwoord = `${helen} ${rest}/${noemer}`;
+    return maakSom(`Haal de helen eruit:\n${teller}/${noemer} = ... (Geef op als bijv: 1 3/4)`, antwoord);
 }
 
 const POOL_BREUKEN_CONTEXT = [
-    { v: 'Van een hardlooproute van [X] km heeft Tess 1/[Y] deel afgelegd. Hoeveel km heeft ze gerend?', f: (x, y) => x / y },
-    { v: 'In een klas zitten [X] kinderen. 2/[Y] deel zit op voetbal. Hoeveel kinderen zijn dat?', f: (x, y) => (x / y) * 2 },
-    { v: 'Een benzinetank heeft een inhoud van [X] liter. De tank is voor 3/[Y] gevuld. Hoeveel liter zit erin?', f: (x, y) => (x / y) * 3 },
-    { v: 'Daan krijgt [X] euro zakgeld per maand. Hij spaart 1/[Y] deel hiervan. Hoeveel euro spaart hij?', f: (x, y) => x / y },
-    { v: 'Een cake moet [X] minuten in de oven. Hij staat er nu 3/[Y] van de tijd in. Hoeveel minuten staat hij al in de oven?', f: (x, y) => (x / y) * 3 },
-    { v: 'Er liggen [X] koekjes in een trommel. Siem eet 1/[Y] deel op. Hoeveel koekjes eet Siem?', f: (x, y) => x / y },
-    { v: 'Een film duurt [X] minuten. Merel heeft al 4/[Y] deel gekeken. Hoeveel minuten heeft ze gezien?', f: (x, y) => (x / y) * 4 },
-    { v: 'Een boer heeft [X] koeien. 1/[Y] deel staat in de stal, de rest staat in de wei. Hoeveel koeien staan er in de stal?', f: (x, y) => x / y },
-    { v: 'De afstand naar opa en oma is [X] km. Na 1/[Y] deel van de rit stoppen we voor limonade. Na hoeveel km stoppen we?', f: (x, y) => x / y },
-    { v: 'Een chocoladereep bestaat uit [X] blokjes. Bram eet 2/[Y] deel op. Hoeveel blokjes eet Bram?', f: (x, y) => (x / y) * 2 },
-    { v: 'Voor een pizza is [X] gram kaas nodig. Sarah heeft al 3/[Y] deel geraspt. Hoeveel gram kaas is dat?', f: (x, y) => (x / y) * 3 },
-    { v: "Op een parkeerplaats staan [X] auto's. 1/[Y] deel is elektrisch. Hoeveel elektrische auto's staan er?", f: (x, y) => x / y },
-    { v: 'Een basisschool heeft [X] leerlingen. 1/[Y] deel komt met de step. Hoeveel leerlingen stappen op de step?', f: (x, y) => x / y },
-    { v: 'In een boomgaard hangen [X] appels. 5/[Y] deel is al rijp om te plukken. Hoeveel appels zijn er rijp?', f: (x, y) => (x / y) * 5 },
-    { v: 'Een zwembad is gevuld met [X] liter water. Door de zon verdampt 1/[Y] deel. Hoeveel liter water is er verdampt?', f: (x, y) => x / y },
-    { v: 'Een boek telt [X] bladzijden. Lucas heeft 1/[Y] deel uit. Hoeveel bladzijden heeft Lucas gelezen?', f: (x, y) => x / y },
-    { v: 'Er zitten [X] kralen in een zakje. Fleur gebruikt 3/[Y] deel voor een armband. Hoeveel kralen gebruikt Fleur?', f: (x, y) => (x / y) * 3 },
-    { v: 'Een fietstocht is [X] km lang. De wielrenners hebben er al 4/[Y] deel op zitten. Hoeveel km hebben ze gefietst?', f: (x, y) => (x / y) * 4 },
-    { v: 'In een mand liggen [X] peren. 1/[Y] deel is beurs en moet weg. Hoeveel peren gooi je weg?', f: (x, y) => x / y },
-    { v: 'Lars heeft [X] knikkers gewonnen. Hij geeft 2/[Y] deel weg aan zijn broertje. Hoeveel knikkers geeft hij weg?', f: (x, y) => (x / y) * 2 },
-    { v: 'Een computergame kost [X] euro. Luuk krijgt 1/[Y] deel korting. Hoeveel euro korting krijgt Luuk?', f: (x, y) => x / y },
-    { v: 'Op een hondenshow zijn [X] honden aanwezig. 3/[Y] deel bestaat uit poedels. Hoeveel poedels doen er mee?', f: (x, y) => (x / y) * 3 },
-    { v: 'Een schooltuin is [X] vierkante meter groot. 1/[Y] deel is gereserveerd voor bloemen. Hoeveel vierkante meter bloemen is dat?', f: (x, y) => x / y },
-    { v: 'Voor een groot feest zijn [X] ballonnen opgeblazen. 1/[Y] deel knapt helaas voortijdig. Hoeveel ballonnen knappen er?', f: (x, y) => x / y }
+    { n: 1, v: 'Van een hardlooproute van [X] km heeft Tess 1/[Y] deel afgelegd. Hoeveel km heeft ze gerend?', f: (x, y) => x / y },
+    { n: 2, v: 'In een klas zitten [X] kinderen. 2/[Y] deel zit op voetbal. Hoeveel kinderen zijn dat?', f: (x, y) => (x / y) * 2 },
+    { n: 3, v: 'Een benzinetank heeft een inhoud van [X] liter. De tank is voor 3/[Y] gevuld. Hoeveel liter zit erin?', f: (x, y) => (x / y) * 3 },
+    { n: 1, v: 'Daan krijgt [X] euro zakgeld per maand. Hij spaart 1/[Y] deel hiervan. Hoeveel euro spaart hij?', f: (x, y) => x / y },
+    { n: 3, v: 'Een cake moet [X] minuten in de oven. Hij staat er nu 3/[Y] van de tijd in. Hoeveel minuten staat hij al in de oven?', f: (x, y) => (x / y) * 3 },
+    { n: 1, v: 'Er liggen [X] koekjes in een trommel. Siem eet 1/[Y] deel op. Hoeveel koekjes eet Siem?', f: (x, y) => x / y },
+    { n: 4, v: 'Een film duurt [X] minuten. Merel heeft al 4/[Y] deel gekeken. Hoeveel minuten heeft ze gezien?', f: (x, y) => (x / y) * 4 },
+    { n: 1, v: 'Een boer heeft [X] koeien. 1/[Y] deel staat in de stal, de rest staat in de wei. Hoeveel koeien staan er in de stal?', f: (x, y) => x / y },
+    { n: 1, v: 'De afstand naar opa en oma is [X] km. Na 1/[Y] deel van de rit stoppen we voor limonade. Na hoeveel km stoppen we?', f: (x, y) => x / y },
+    { n: 2, v: 'Een chocoladereep bestaat uit [X] blokjes. Bram eet 2/[Y] deel op. Hoeveel blokjes eet Bram?', f: (x, y) => (x / y) * 2 },
+    { n: 3, v: 'Voor een pizza is [X] gram kaas nodig. Sarah heeft al 3/[Y] deel geraspt. Hoeveel gram kaas is dat?', f: (x, y) => (x / y) * 3 },
+    { n: 1, v: "Op een parkeerplaats staan [X] auto's. 1/[Y] deel is elektrisch. Hoeveel elektrische auto's staan er?", f: (x, y) => x / y },
+    { n: 1, v: 'Een basisschool heeft [X] leerlingen. 1/[Y] deel komt met de step. Hoeveel leerlingen stappen op de step?', f: (x, y) => x / y },
+    { n: 5, v: 'In een boomgaard hangen [X] appels. 5/[Y] deel is al rijp om te plukken. Hoeveel appels zijn er rijp?', f: (x, y) => (x / y) * 5 },
+    { n: 1, v: 'Een zwembad is gevuld met [X] liter water. Door de zon verdampt 1/[Y] deel. Hoeveel liter water is er verdampt?', f: (x, y) => x / y },
+    { n: 1, v: 'Een boek telt [X] bladzijden. Lucas heeft 1/[Y] deel uit. Hoeveel bladzijden heeft Lucas gelezen?', f: (x, y) => x / y },
+    { n: 3, v: 'Er zitten [X] kralen in een zakje. Fleur gebruikt 3/[Y] deel voor een armband. Hoeveel kralen gebruikt Fleur?', f: (x, y) => (x / y) * 3 },
+    { n: 4, v: 'Een fietstocht is [X] km lang. De wielrenners hebben er al 4/[Y] deel op zitten. Hoeveel km hebben ze gefietst?', f: (x, y) => (x / y) * 4 },
+    { n: 1, v: 'In een mand liggen [X] peren. 1/[Y] deel is beurs en moet weg. Hoeveel peren gooi je weg?', f: (x, y) => x / y },
+    { n: 2, v: 'Lars heeft [X] knikkers gewonnen. Hij geeft 2/[Y] deel weg aan zijn broertje. Hoeveel knikkers geeft hij weg?', f: (x, y) => (x / y) * 2 },
+    { n: 1, v: 'Een computergame kost [X] euro. Luuk krijgt 1/[Y] deel korting. Hoeveel euro korting krijgt Luuk?', f: (x, y) => x / y },
+    { n: 3, v: 'Op een hondenshow zijn [X] honden aanwezig. 3/[Y] deel bestaat uit poedels. Hoeveel poedels doen er mee?', f: (x, y) => (x / y) * 3 },
+    { n: 1, v: 'Een schooltuin is [X] vierkante meter groot. 1/[Y] deel is gereserveerd voor bloemen. Hoeveel vierkante meter bloemen is dat?', f: (x, y) => x / y },
+    { n: 1, v: 'Voor een groot feest zijn [X] ballonnen opgeblazen. 1/[Y] deel knapt helaas voortijdig. Hoeveel ballonnen knappen er?', f: (x, y) => x / y }
 ];
 
 function genBreukenContext() {
     const item = pickRandom(POOL_BREUKEN_CONTEXT);
-    const y = pickRandom([4, 5, 6, 8, 10]);
-    const factor = randInt(4, 8);
+    // y moet groter zijn dan de teller uit het sjabloon, anders ontstaat er
+    // een onechte breuk (bijv. "5/2 deel"), wat pedagogisch onzin is.
+    const yOpties = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12].filter(y => y > item.n);
+    const y = pickRandom(yOpties);
+    const factor = randInt(3, 14);
     const x = y * factor;
     const vraag = item.v.replace('[X]', x).replace('[Y]', y);
     return maakSom(vraag, item.f(x, y));
@@ -659,27 +680,36 @@ function genOptellenAftrekken(instellingen) {
 }
 
 function genVermenigvuldigen() {
-    if (Math.random() > 0.5) {
-        const k1 = randInt(2, 15);
-        const k2 = randInt(2, 15);
+    const variant = randInt(0, 2);
+    if (variant === 0) {
+        const k1 = randInt(2, 20);
+        const k2 = randInt(2, 20);
         return maakSom(`${k1} × ${k2} =`, k1 * k2);
     }
-    const k1 = pickRandom([4, 6, 8, 5, 7]);
-    const k2 = pickRandom([14, 25, 125, 230, 110]);
+    if (variant === 1) {
+        const k1 = pickRandom([4, 6, 8, 5, 7, 9, 3]);
+        const k2 = pickRandom([14, 25, 125, 230, 110, 15, 45, 320, 205]);
+        return maakSom(`${k1} × ${k2} =`, k1 * k2);
+    }
+    // Twee getallen tussen de 11 en 99 keer een klein getal, voor extra variatie.
+    const k1 = randInt(11, 99);
+    const k2 = randInt(2, 9);
     return maakSom(`${k1} × ${k2} =`, k1 * k2);
 }
 
 function genDelen() {
-    if (Math.random() > 0.5) {
-        const deler = randInt(3, 19);
-        const res = randInt(2, 11);
+    if (Math.random() > 0.4) {
+        const deler = randInt(3, 24);
+        const res = randInt(2, 20);
         return maakSom(`${deler * res} : ${deler} =`, res);
     }
     const item = pickRandom([
         { v: '84 : 4', a: 21 },
         { v: '450 : 9', a: 50 },
         { v: '725 : 5', a: 145 },
-        { v: '360 : 6', a: 60 }
+        { v: '360 : 6', a: 60 },
+        { v: '936 : 8', a: 117 },
+        { v: '1044 : 12', a: 87 }
     ]);
     return maakSom(`${item.v} =`, item.a);
 }
@@ -944,11 +974,36 @@ function toggleTafelNummer(t) {
     }
 }
 
+const MAX_SOMMEN_PER_OEFENING = 5000;
+
 function setLengte(l) {
     state.sommenPerOefening = l;
     document.querySelectorAll('#lengteGroep .btn-sub').forEach(b => {
         b.classList.toggle('active', parseInt(b.dataset.lengte, 10) === l);
     });
+    document.getElementById('customLengteInput').value = '';
+    toonLengteWaarschuwingIndienNodig(l);
+}
+
+function setLengteCustom() {
+    const input = document.getElementById('customLengteInput');
+    let waarde = parseInt(input.value, 10);
+    if (!Number.isFinite(waarde) || waarde < 1) {
+        alert('Vul een geldig aantal in (minimaal 1).');
+        return;
+    }
+    if (waarde > MAX_SOMMEN_PER_OEFENING) {
+        alert(`Het maximum is ${MAX_SOMMEN_PER_OEFENING} sommen per oefening (anders wordt de pagina te zwaar om te laden). Er is nu ${MAX_SOMMEN_PER_OEFENING} gebruikt.`);
+        waarde = MAX_SOMMEN_PER_OEFENING;
+        input.value = String(waarde);
+    }
+    state.sommenPerOefening = waarde;
+    document.querySelectorAll('#lengteGroep .btn-sub').forEach(b => b.classList.remove('active'));
+    toonLengteWaarschuwingIndienNodig(waarde);
+}
+
+function toonLengteWaarschuwingIndienNodig(l) {
+    document.getElementById('lengteWaarschuwing').style.display = l >= 500 ? 'block' : 'none';
 }
 
 function setBereik(r) {
@@ -1168,7 +1223,7 @@ function nakijkenWerkblad() {
     });
 
     // Punten
-    const verdiendePunten = goedTelling * 1;
+    const verdiendePunten = goedTelling * 10;
     state.xp += verdiendePunten;
     Storage.set(CONFIG.storageKeys.points, state.xp);
     document.getElementById('xpDisplay').textContent = String(state.xp);
@@ -1230,6 +1285,7 @@ function handleAction(el) {
         case 'toggle-tile': toggleTile(el.dataset.cat); break;
         case 'toggle-tafel': toggleTafelNummer(parseInt(el.dataset.tafel, 10)); break;
         case 'set-lengte': setLengte(parseInt(el.dataset.lengte, 10)); break;
+        case 'set-lengte-custom': setLengteCustom(); break;
         case 'set-bereik': setBereik(parseInt(el.dataset.bereik, 10)); break;
         case 'genereer-werkblad': genereerWerkblad(); break;
         case 'nakijken': nakijkenWerkblad(); break;
